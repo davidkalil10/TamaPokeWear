@@ -20,12 +20,12 @@ This is a Flutter reimplementation of [TamaPoke](https://github.com/socquique/Ta
 
 ### 🚀 Other Projects
 
-<!-- TODO: Add your project links here -->
-> *(Links coming soon — check back!)*
-
 | Project | Description | Links |
 |---|---|---|
-| — | — | — |
+| 📺 **IPTV Smart Cast** | A premium IPTV player for Android with a standout exclusive feature: **Watch Together** — watch live channels in real time with friends remotely, synced frame-by-frame. | [GitHub](https://github.com/davidkalil10/IPTV-Smart-Cast-Website) |
+| 🎮 **Retro Smart Cast** | The ultimate GBA, GBC & GB emulator for Android, built in Flutter with a Dart FFI bridge to a native C++ engine. 60 FPS performance, haptic virtual buttons, real-time library search and multi-language support. | [GitHub](https://github.com/davidkalil10/Retro-Smart-Cast-Website) |
+| 🎸 **Cifraria** | Professional song library and guitar chord manager built in Flutter. Smart folders, setlist management, animated QR offline sharing, instant transposition, Google Drive sync, and Meta Quest VR support. | [GitHub](https://github.com/davidkalil10/Cifraria_Website) |
+| 🏢 **Simulação Sem Ilusão** | A financial X-ray app for anyone buying off-plan real estate in Brazil. Simulates INCC impact, Caixa vs. bank financing, obra evolution, FGTS weight, and custom payment schedules — with clean charts and PDF export. | [GitHub](https://github.com/davidkalil10/SimulacaoSemIlusao_Website) |
 
 ---
 
