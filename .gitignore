@@ -1,0 +1,43 @@
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+pubspec.lock
+
+# Android
+android/.gradle/
+android/local.properties
+android/app/debug/
+android/app/profile/
+android/app/release/
+android/key.properties
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.DS_Store
+
+# Assets — NOT committed for copyright reasons
+# Run tools/download_sprites.py to generate sprites
+# Run tools/generate_sounds.py to generate sounds
+assets/sprites/normal/
+assets/sprites/shiny/
+assets/sprites/thumbs/
+assets/sounds/
+
+# PMD SpriteCollab local cache (used by download_sprites.py)
+tools/.pmd_cache/
+pmd_cache/
+
+# Old scripts at root (moved to tools/)
+download_sprites.py
+generate_sounds.py
+
+# Misc
+*.log
+*.class
