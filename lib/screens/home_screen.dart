@@ -48,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late AnimationController _bounceController;
   late Animation<double> _bounceAnimation;
   late PageController _pageCtrl;
+  late PageController _horizontalPageCtrl;
   bool _isBathing = false;
   bool _isFeeding = false;
 
@@ -66,12 +67,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _pageCtrl = PageController(initialPage: 1);
-    engine.onStateChanged = () => setState(() {});
-    engine.onEvolutionReady = _showEvolution;
-    engine.onFarewellReady = _showFarewell;
-    engine.onRunawayReady = _showRunaway;
-    engine.onMedalEarned = _showMedal;
-    engine.onStreakMilestone = _showStreakMilestone;
+    _horizontalPageCtrl = PageController(initialPage: 0);
+    engine.onStateChanged = () { if (mounted) setState(() {}); };
+    engine.onEvolutionReady = () { if (mounted) _showEvolution(); };
+    engine.onFarewellReady = () { if (mounted) _showFarewell(); };
+    engine.onRunawayReady = () { if (mounted) _showRunaway(); };
+    engine.onMedalEarned = (m) { if (mounted) _showMedal(m); };
+    engine.onStreakMilestone = (m) { if (mounted) _showStreakMilestone(m); };
 
     _bounceController = AnimationController(
       duration: const Duration(milliseconds: 800),
@@ -87,6 +89,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void dispose() {
     _bounceController.dispose();
     _pageCtrl.dispose();
+    _horizontalPageCtrl.dispose();
     super.dispose();
   }
 
@@ -125,6 +128,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           // Index 1: Horizontal swipe for Home and Pokedex
           PageView(
             scrollDirection: Axis.horizontal,
+            controller: _horizontalPageCtrl,
             children: [
               // Horizontal Page 0: Main Home Content
               GestureDetector(
@@ -330,7 +334,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 top: size.height * 0.35,
                                 right: size.width * 0.1,
                                 child: GestureDetector(
-                                  onTap: _showFarewell,
+                                  onTap: _showFarewellDialog,
                                   child: Container(
                                     padding: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
@@ -408,7 +412,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ),
               // Horizontal Page 1: Pokedex
-              PokedexScreen(engine: engine),
+              PokedexScreen(
+                engine: engine,
+                onReturnHome: () {
+                  if (mounted) {
+                    _horizontalPageCtrl.animateToPage(
+                      0,
+                      duration: const Duration(milliseconds: 400),
+                      curve: Curves.easeInOut,
+                    );
+                  }
+                },
+              ),
             ],
           ),
 
@@ -464,20 +479,27 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
 
     final path = 'assets/sprites/$folder/${pet.speciesId.toString().padLeft(3, '0')}_$action.gif';
+    final fallbackPath = 'assets/sprites/$folder/${pet.speciesId.toString().padLeft(3, '0')}_idle.gif';
 
     Widget sprite = Image.asset(
       path,
       fit: BoxFit.none, // Don't stretch small GIFs to the large SizedBox
       errorBuilder: (context, error, stackTrace) {
-        return Center(
-          child: Text(
-            '#${pet.speciesId.toString().padLeft(3, '0')}',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: WearTheme.typeColor(entry.type),
-            ),
-          ),
+        return Image.asset(
+          fallbackPath,
+          fit: BoxFit.none,
+          errorBuilder: (context, error, stackTrace) {
+            return Center(
+              child: Text(
+                '#${pet.speciesId.toString().padLeft(3, '0')}',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: WearTheme.typeColor(entry.type),
+                ),
+              ),
+            );
+          },
         );
       },
     );
@@ -572,32 +594,122 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  void _showFarewellDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: const Color(0xFF1A1A2E),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.favorite, color: Colors.pinkAccent, size: 28),
+              const SizedBox(height: 4),
+              Text(
+                tr('goodbyeQ'),
+                style: const TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  InkWell(
+                    onTap: () => Navigator.pop(ctx),
+                    customBorder: const CircleBorder(),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: const BoxDecoration(color: Colors.white12, shape: BoxShape.circle),
+                      child: const Icon(Icons.close, color: Colors.white, size: 24),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      engine.farewell();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              CeremonyScreen(engine: engine, type: Ceremony.farewell),
+                        ),
+                      );
+                    },
+                    customBorder: const CircleBorder(),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(color: Colors.pink.withOpacity(0.2), shape: BoxShape.circle),
+                      child: const Icon(Icons.check, color: Colors.pinkAccent, size: 24),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _showReleaseDialog() {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) => Dialog(
         backgroundColor: const Color(0xFF1A1A2E),
-        title: Text(tr('releaseQ'), style: const TextStyle(fontSize: 14)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(tr('no')),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.outbox_rounded, color: Colors.white70, size: 28),
+              const SizedBox(height: 4),
+              Text(
+                tr('releaseQ'),
+                style: const TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  InkWell(
+                    onTap: () => Navigator.pop(ctx),
+                    customBorder: const CircleBorder(),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: const BoxDecoration(color: Colors.white12, shape: BoxShape.circle),
+                      child: const Icon(Icons.close, color: Colors.white, size: 24),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      engine.release();
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              CeremonyScreen(engine: engine, type: Ceremony.release),
+                        ),
+                      );
+                    },
+                    customBorder: const CircleBorder(),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(color: Colors.red.withOpacity(0.2), shape: BoxShape.circle),
+                      child: const Icon(Icons.check, color: Colors.redAccent, size: 24),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              engine.release();
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (_) =>
-                      CeremonyScreen(engine: engine, type: Ceremony.release),
-                ),
-              );
-            },
-            child: Text(tr('yes'), style: const TextStyle(color: Colors.red)),
-          ),
-        ],
+        ),
       ),
     );
   }

@@ -87,6 +87,13 @@ While **awake**, per minute:
 
 After any ending, a **new egg** appears.
 
+### PC Box & Veterans (Flutter Exclusive Feature)
+In addition to the original mechanics, this version introduces a persistent **PC Box**!
+- When a Pokémon completes its lifecycle through a **Farewell**, it earns **Veteran** status and is permanently saved to your PC Box with all its final stats, medals, and bond.
+- **Easter Egg:** You can recall your saved Veterans at any time by **long-pressing their sprite in the Pokédex**.
+- If you currently have an active Veteran and invoke another from the PC, the current one will be **safely saved back** to the PC.
+- If you invoke a PC Pokémon while raising a non-veteran (a pet that hasn't earned its Farewell yet), the current pet will be **permanently released** into the wild to make room.
+
 ### Bonds, Streaks, Medals, Pokédex
 - **Streak** (player-wide): first care each real day. Milestones at **3 / 7 / 30 / 100** days.
 - **Bond** (per pet): grows with affection (**cap +8/day**), cools on neglect.

@@ -33,6 +33,26 @@ class StorageService {
   Future<void> wipe() async {
     await _box.clear();
   }
+
+  // ── PC Box (Archive) ──────────────────────────────────────────────────────
+  
+  String _archiveKey(int speciesId, bool isShiny) => 'archived_${speciesId}_$isShiny';
+
+  Future<void> saveArchivedPet(PetState pet) async {
+    await _box.put(_archiveKey(pet.speciesId, pet.shiny), pet.clone());
+  }
+
+  PetState? loadArchivedPet(int speciesId, bool isShiny) {
+    return _box.get(_archiveKey(speciesId, isShiny));
+  }
+
+  bool hasArchivedPet(int speciesId, bool isShiny) {
+    return _box.containsKey(_archiveKey(speciesId, isShiny));
+  }
+
+  Future<void> removeArchivedPet(int speciesId, bool isShiny) async {
+    await _box.delete(_archiveKey(speciesId, isShiny));
+  }
 }
 
 /// Adapter manual para PetState (evita dependência de build_runner)

@@ -173,9 +173,81 @@ class PetState extends HiveObject {
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
+  PetState clone() {
+    return PetState(
+      fullness: fullness,
+      joy: joy,
+      energy: energy,
+      hygiene: hygiene,
+      poops: poops,
+      weight: weight,
+      geneAtk: geneAtk,
+      geneDef: geneDef,
+      geneSpe: geneSpe,
+      trAtk: trAtk,
+      trDef: trDef,
+      trSpe: trSpe,
+      berryKnown: berryKnown,
+      shiny: shiny,
+      ageMinutes: ageMinutes,
+      speciesId: speciesId,
+      prevSpeciesId: prevSpeciesId,
+      careMistakes: careMistakes,
+      sleeping: sleeping,
+      lastSeenEpoch: lastSeenEpoch,
+      ceremony: ceremony,
+      lastEnd: lastEnd,
+      dexReg: List.from(dexReg),
+      dexShinyReg: List.from(dexShinyReg),
+      streak: streak,
+      bestStreak: bestStreak,
+      lastCareDay: lastCareDay,
+      bond: bond,
+      nick: nick,
+      medals: medals,
+      totalMedals: totalMedals,
+      newMedal: newMedal,
+      lastMilestone: lastMilestone,
+      gameHi: gameHi,
+      strHi: strHi,
+      eggTarget: eggTarget,
+      eggShiny: eggShiny,
+      eggTaps: eggTaps,
+      starterPick: starterPick,
+      neglectTicks: neglectTicks,
+      mistakeCooldown: mistakeCooldown,
+      goodTicks: goodTicks,
+      ticksSinceSave: ticksSinceSave,
+      pendingSave: pendingSave,
+      langIndex: langIndex,
+      soundOn: soundOn,
+    );
+  }
+
+  void copyGlobalsFrom(PetState activePet) {
+    dexReg = List.from(activePet.dexReg);
+    dexShinyReg = List.from(activePet.dexShinyReg);
+    streak = activePet.streak;
+    bestStreak = activePet.bestStreak;
+    lastCareDay = activePet.lastCareDay;
+    langIndex = activePet.langIndex;
+    soundOn = activePet.soundOn;
+    gameHi = activePet.gameHi;
+    strHi = activePet.strHi;
+    totalMedals = activePet.totalMedals;
+    lastMilestone = activePet.lastMilestone;
+    
+    // As it is replacing an active game session, we should also maintain the current
+    // egg internal states in case the user decides to hatch a new egg soon.
+    eggTarget = activePet.eggTarget;
+    eggShiny = activePet.eggShiny;
+    eggTaps = activePet.eggTaps;
+    starterPick = activePet.starterPick;
+  }
+
   bool get isEgg => speciesId == -1;
 
-  int get level => ageMinutes ~/ minutesPerLevel;
+  int get level => (ageMinutes ~/ minutesPerLevel) + 1;
 
   int get lowestStat => [fullness, joy, energy, hygiene].reduce(min);
 

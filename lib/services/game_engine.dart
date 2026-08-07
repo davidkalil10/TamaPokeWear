@@ -79,7 +79,7 @@ class GameEngine {
     for (int i = 0; i < mins; i++) {
       _pet.ageMinutes++;
       if (_pet.isEgg) {
-        if (_pet.ageMinutes >= 3) _hatch();
+        if (_pet.ageMinutes >= 3 && !_pet.starterPick) _hatch();
         continue;
       }
       if (_pet.sleeping) {
@@ -370,8 +370,7 @@ class GameEngine {
 
   bool get canFarewellNow {
     if (_pet.isEgg) return false;
-    return dex[_pet.speciesId].isFinalForm &&
-        _pet.ageMinutes >= farewellAgeMin;
+    return true; // TEMP: Forcing Farewell button to appear for testing
   }
 
   bool get canRunawayNow => _pet.neglectTicks >= runawayTicks;
@@ -379,6 +378,7 @@ class GameEngine {
   void farewell() {
     _pet.ceremony = Ceremony.farewell.index;
     _pet.lastEnd = Ceremony.farewell.index;
+    _storage.saveArchivedPet(_pet);
     _save();
   }
 
@@ -451,6 +451,7 @@ class GameEngine {
     _pet.shiny = _pet.eggShiny;
     _pet.registerSpecies(_pet.speciesId);
     if (_pet.shiny) _pet.registerShiny(_pet.speciesId);
+    _save();
     _notifyChanged();
   }
 
@@ -681,5 +682,38 @@ class GameEngine {
     if (_pet.joy < 20) return 'sad';
     if (_pet.weight > 50) return 'chubby';
     return 'happy';
+  }
+
+  // ── PC Box (Easter Egg) ───────────────────────────────────────────────────
+
+  bool hasArchivedPet(int speciesId, bool isShiny) {
+    return _storage.hasArchivedPet(speciesId, isShiny);
+  }
+
+  /// Verifica se o Pokémon atual é um veterano (já teve despedida).
+  bool isCurrentPetVeteran() {
+    if (_pet.isEgg) return false;
+    return _pet.ceremony == Ceremony.farewell.index;
+  }
+
+  /// Troca o Pokémon atual por um do PC.
+  void swapWithArchived(int targetSpecies, bool targetShiny) async {
+    final archived = _storage.loadArchivedPet(targetSpecies, targetShiny);
+    if (archived == null) return; // Não deveria acontecer se UI verificar antes
+
+    if (isCurrentPetVeteran()) {
+      // Se é veterano, salva o progresso dele de volta no PC
+      await _storage.saveArchivedPet(_pet);
+    }
+    // Se não é veterano, o pet atual é simplesmente descartado
+
+    final newPet = archived.clone();
+    newPet.copyGlobalsFrom(_pet); // Preserve Pokedex, Streak, and Medals
+    _pet = newPet;
+    
+    // O pet arquivado "desperta" agora, então precisamos atualizar lastSeenEpoch
+    _pet.lastSeenEpoch = DateTime.now().millisecondsSinceEpoch;
+    _save();
+    _notifyChanged();
   }
 }

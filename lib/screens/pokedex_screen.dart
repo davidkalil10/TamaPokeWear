@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import '../services/game_engine.dart';
 import '../services/audio_service.dart';
+import '../i18n/strings.dart';
 
 class PokedexScreen extends StatefulWidget {
   final GameEngine engine;
-  const PokedexScreen({super.key, required this.engine});
+  final VoidCallback? onReturnHome;
+
+  const PokedexScreen({super.key, required this.engine, this.onReturnHome});
 
   @override
   State<PokedexScreen> createState() => _PokedexScreenState();
@@ -12,6 +15,73 @@ class PokedexScreen extends StatefulWidget {
 
 class _PokedexScreenState extends State<PokedexScreen> {
   final Set<int> _showingShiny = {};
+
+  void _attemptSwap(int targetId, bool targetShiny) {
+    if (targetId == widget.engine.pet.speciesId && targetShiny == widget.engine.pet.shiny) {
+      // Ignorar se já for exatamente o mesmo que o pet ativo
+      return;
+    }
+
+    final isVeteran = widget.engine.isCurrentPetVeteran();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: const Color(0xFF1A1A2E),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  isVeteran ? Icons.star_rounded : Icons.warning_rounded,
+                  color: isVeteran ? Colors.amber : Colors.redAccent,
+                  size: 24,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  isVeteran ? tr('pcVeteranTitle') : tr('pcNewbieTitle'),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: isVeteran ? Colors.amber : Colors.redAccent,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  isVeteran ? tr('pcVeteranMsg') : tr('pcNewbieMsg'),
+                  style: const TextStyle(fontSize: 11, color: Colors.white70),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isVeteran ? Colors.blueAccent : Colors.redAccent,
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                    minimumSize: const Size(0, 30),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    widget.engine.swapWithArchived(targetId, targetShiny);
+                    widget.onReturnHome?.call();
+                  },
+                  child: Text(
+                    isVeteran ? tr('pcVeteranSave') : tr('pcNewbieRelease'),
+                    style: const TextStyle(color: Colors.white, fontSize: 10),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +140,28 @@ class _PokedexScreenState extends State<PokedexScreen> {
                   );
                 }
 
+                // Indicador de PC Box
+                if (widget.engine.hasArchivedPet(id, showShiny)) {
+                  sprite = Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      sprite,
+                      const Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Icon(Icons.catching_pokemon, color: Colors.redAccent, size: 14),
+                      ),
+                    ],
+                  );
+                }
+
                 return GestureDetector(
+                  onLongPress: () {
+                    if (registered && widget.engine.hasArchivedPet(id, showShiny)) {
+                      AudioService().playEvolve();
+                      _attemptSwap(id, showShiny);
+                    }
+                  },
                   onTap: () {
                     if (registered) {
                       AudioService().playPlay(); // Toca som ao clicar
