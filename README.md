@@ -16,7 +16,7 @@ This is a Flutter reimplementation of [TamaPoke](https://github.com/socquique/Ta
 
 ## About the Author
 
-👤 **David Kalil** — [@davidkalil10](https://github.com/davidkalil10)
+👤 **David Kalil Braga** — [@davidkalil10](https://github.com/davidkalil10)
 
 ### 🚀 Other Projects
 

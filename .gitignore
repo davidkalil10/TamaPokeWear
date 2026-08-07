@@ -35,8 +35,8 @@ tools/.pmd_cache/
 pmd_cache/
 
 # Old scripts at root (moved to tools/)
-download_sprites.py
-generate_sounds.py
+/download_sprites.py
+/generate_sounds.py
 
 # Misc
 *.log
