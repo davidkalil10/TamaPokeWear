@@ -29,6 +29,12 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Generate Assets
+        run: |
+          pip install Pillow
+          python tools/download_sprites.py
+          python tools/generate_sounds.py
+
       - name: Build APK (Split per ABI - Debug)
         run: flutter build apk --split-per-abi --debug
 
