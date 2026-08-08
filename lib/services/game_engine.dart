@@ -13,6 +13,7 @@ import '../data/pokedex.dart';
 import '../models/pet_state.dart';
 import 'audio_service.dart';
 import 'storage_service.dart';
+import 'notification_service.dart';
 
 class GameEngine {
   final StorageService _storage;
@@ -370,7 +371,7 @@ class GameEngine {
 
   bool get canFarewellNow {
     if (_pet.isEgg) return false;
-    return true; // TEMP: Forcing Farewell button to appear for testing
+    return _pet.ageMinutes >= farewellAgeMin && dex[_pet.speciesId].isFinalForm;
   }
 
   bool get canRunawayNow => _pet.neglectTicks >= runawayTicks;
@@ -715,5 +716,62 @@ class GameEngine {
     _pet.lastSeenEpoch = DateTime.now().millisecondsSinceEpoch;
     _save();
     _notifyChanged();
+  }
+
+  // ── Notificações (Push) ───────────────────────────────────────────────────
+
+  void cancelAllNotifications() {
+    NotificationService().cancelAllNotifications();
+  }
+
+  void scheduleFutureNotifications() {
+    if (_pet.isEgg) return;
+
+    final now = DateTime.now();
+
+    // Fome cai 2 por minuto
+    if (_pet.fullness > 20) {
+      final minsToHungry = (_pet.fullness - 20) / 2;
+      if (minsToHungry >= 2) {
+        NotificationService().scheduleCareNotification(
+          1,
+          now.add(Duration(minutes: minsToHungry.round())),
+          'Seu Pokémon está faminto!',
+          'Abra o app para dar uma Berry ou Candy.',
+          speciesId: _pet.speciesId,
+        );
+      }
+    }
+
+    // Energia cai 1 por minuto se acordado (e peso > 50 dobra a queda, mas simplificaremos)
+    if (!_pet.sleeping && _pet.energy > 20) {
+      // Se weight > 50, cai 2 por min. Senão 1 por min.
+      final dropRate = _pet.weight > 50 ? 2 : 1;
+      final minsToTired = (_pet.energy - 20) / dropRate;
+      if (minsToTired >= 2) {
+        NotificationService().scheduleCareNotification(
+          2,
+          now.add(Duration(minutes: minsToTired.round())),
+          'Seu Pokémon está exausto!',
+          'Abra o app para apagar a luz e colocá-lo para dormir.',
+          speciesId: _pet.speciesId,
+        );
+      }
+    }
+
+    // Higiene cai (1 + 4*poops) por minuto
+    if (_pet.hygiene > 20) {
+      final dropRate = 1 + 4 * _pet.poops;
+      final minsToDirty = (_pet.hygiene - 20) / dropRate;
+      if (minsToDirty >= 2) {
+        NotificationService().scheduleCareNotification(
+          3,
+          now.add(Duration(minutes: minsToDirty.round())),
+          'Seu Pokémon precisa de um banho!',
+          'Ele está perdendo alegria rapidamente.',
+          speciesId: _pet.speciesId,
+        );
+      }
+    }
   }
 }

@@ -5,10 +5,37 @@ import 'screens/home_screen.dart';
 import 'services/game_engine.dart';
 import 'theme/wear_theme.dart';
 
-class TamaPokeApp extends StatelessWidget {
+class TamaPokeApp extends StatefulWidget {
   final GameEngine engine;
 
   const TamaPokeApp({super.key, required this.engine});
+
+  @override
+  State<TamaPokeApp> createState() => _TamaPokeAppState();
+}
+
+class _TamaPokeAppState extends State<TamaPokeApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    widget.engine.cancelAllNotifications();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.detached) {
+      widget.engine.scheduleFutureNotifications();
+    } else if (state == AppLifecycleState.resumed) {
+      widget.engine.cancelAllNotifications();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +46,7 @@ class TamaPokeApp extends StatelessWidget {
         builder: (context, shape, child) {
           return AmbientMode(
             builder: (context, mode, child) {
-              return HomeScreen(engine: engine);
+              return HomeScreen(engine: widget.engine);
             },
           );
         },
