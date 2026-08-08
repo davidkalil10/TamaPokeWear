@@ -14,6 +14,7 @@ import '../data/pokedex.dart';
 import '../i18n/strings.dart';
 import '../models/pet_state.dart';
 import '../services/game_engine.dart';
+import '../services/notification_service.dart';
 import '../theme/wear_theme.dart';
 import '../widgets/action_buttons.dart';
 import '../widgets/biome_background.dart';
@@ -66,6 +67,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await NotificationService().requestPermissions();
+    });
+
     _pageCtrl = PageController(initialPage: 1);
     _horizontalPageCtrl = PageController(initialPage: 0);
     engine.onStateChanged = () { if (mounted) setState(() {}); };

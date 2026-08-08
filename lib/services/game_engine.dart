@@ -67,13 +67,16 @@ class GameEngine {
 
   void _syncClock(int nowEpoch) {
     final seen = _pet.lastSeenEpoch;
-    _pet.lastSeenEpoch = nowEpoch;
-    if (nowEpoch == 0) return;
+    if (nowEpoch == 0 || seen == 0) return;
 
-    int mins = (seen > 0 && nowEpoch > seen) ? (nowEpoch - seen) ~/ 60 : 0;
-    if (mins < 2 || _pet.currentCeremony != Ceremony.none) {
+    int mins = (nowEpoch > seen) ? (nowEpoch - seen) ~/ 60 : 0;
+    if (mins < 1 || _pet.currentCeremony != Ceremony.none) {
       return; // sem tempo significativo ou em cerimônia
     }
+    
+    // Atualiza o lastSeenEpoch apenas com os minutos que vamos processar,
+    // preservando os segundos restantes para o próximo cálculo!
+    _pet.lastSeenEpoch = seen + (mins * 60);
     // Tope: 2 semanas
     if (mins > 14 * 24 * 60) mins = 14 * 24 * 60;
 
@@ -358,6 +361,7 @@ class GameEngine {
       _awardMedal(Medals.finalForm);
     }
 
+    _save();
     _notifyChanged();
     return true;
   }
@@ -666,6 +670,18 @@ class GameEngine {
 
   void _save() {
     _storage.savePet(_pet);
+  }
+
+  void forceSave() {
+    _save();
+  }
+
+  void resumeGame() {
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    if (_pet.lastSeenEpoch > 0) {
+      _syncClock(now);
+    }
+    _notifyChanged();
   }
 
   void _notifyChanged() {

@@ -13,7 +13,6 @@ void main() async {
 
   final notificationService = NotificationService();
   await notificationService.init();
-  await notificationService.requestPermissions();
 
   final engine = GameEngine(storage: storage);
   await engine.init();

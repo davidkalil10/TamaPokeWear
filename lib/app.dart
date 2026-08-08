@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wear_plus/wear_plus.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'screens/home_screen.dart';
 import 'services/game_engine.dart';
@@ -19,6 +20,7 @@ class _TamaPokeAppState extends State<TamaPokeApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    WakelockPlus.enable();
     widget.engine.cancelAllNotifications();
   }
 
@@ -30,9 +32,11 @@ class _TamaPokeAppState extends State<TamaPokeApp> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.detached) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.detached || state == AppLifecycleState.inactive) {
+      widget.engine.forceSave();
       widget.engine.scheduleFutureNotifications();
     } else if (state == AppLifecycleState.resumed) {
+      widget.engine.resumeGame();
       widget.engine.cancelAllNotifications();
     }
   }

@@ -63,7 +63,7 @@ class NotificationService {
     if (speciesId != null && speciesId > 0) {
       try {
         final String dexNum = speciesId.toString().padLeft(3, '0');
-        final ByteData byteData = await rootBundle.load('assets/sprites/thumbs/${dexNum}_thumb.png');
+        final ByteData byteData = await rootBundle.load('assets/sprites/thumbs/$dexNum.png');
         final Uint8List bytes = byteData.buffer.asUint8List();
         largeIcon = ByteArrayAndroidBitmap(bytes);
       } catch (e) {
