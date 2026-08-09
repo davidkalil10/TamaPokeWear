@@ -120,6 +120,7 @@ class PetState extends HiveObject {
 
   // Som
   @HiveField(45) bool soundOn;
+  @HiveField(46) int bgmIndex;
 
   PetState({
     this.fullness = 80,
@@ -168,6 +169,7 @@ class PetState extends HiveObject {
     this.pendingSave = false,
     this.langIndex = 1, // EN default
     this.soundOn = true,
+    this.bgmIndex = 0,
   })  : dexReg = dexReg ?? List.filled(19, 0),
         dexShinyReg = dexShinyReg ?? List.filled(19, 0);
 
@@ -221,6 +223,7 @@ class PetState extends HiveObject {
       pendingSave: pendingSave,
       langIndex: langIndex,
       soundOn: soundOn,
+      bgmIndex: bgmIndex,
     );
   }
 

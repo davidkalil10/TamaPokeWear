@@ -218,12 +218,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(width: 25),
+                const SizedBox(width: 10),
                 // Lang button
                 GestureDetector(
                   onTap: _cycleLanguage,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.black38),
                       borderRadius: BorderRadius.circular(6),
@@ -231,6 +231,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: Text(
                       '${currentLang.name.toUpperCase()} >',
                       style: const TextStyle(color: Colors.black87, fontSize: 10, fontFamily: 'monospace', fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // BGM button
+                GestureDetector(
+                  onTap: () {
+                    AudioService().playTap();
+                    setState(() {
+                      widget.engine.bgmCycle();
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: widget.engine.bgmTrackName == 'none' ? Colors.grey : const Color(0xFF1976D2),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      'BGM: ${widget.engine.bgmTrackName.toUpperCase()}',
+                      style: const TextStyle(color: Colors.white, fontSize: 10, fontFamily: 'monospace', fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),

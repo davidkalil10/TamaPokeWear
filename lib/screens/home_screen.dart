@@ -9,6 +9,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import '../services/audio_service.dart';
 
 import '../data/pokedex.dart';
 import '../i18n/strings.dart';
@@ -43,7 +44,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen>
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   GameEngine get engine => widget.engine;
 
   late AnimationController _bounceController;
@@ -64,22 +66,38 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   bool _isShowingMedal = false;
   String _medalName = '';
 
+  bool _isPokedexBgm = false;
+
   @override
   void initState() {
     super.initState();
-    
+    WidgetsBinding.instance.addObserver(this);
+
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await NotificationService().requestPermissions();
     });
 
     _pageCtrl = PageController(initialPage: 1);
     _horizontalPageCtrl = PageController(initialPage: 0);
-    engine.onStateChanged = () { if (mounted) setState(() {}); };
-    engine.onEvolutionReady = () { if (mounted) _showEvolution(); };
-    engine.onFarewellReady = () { if (mounted) _showFarewell(); };
-    engine.onRunawayReady = () { if (mounted) _showRunaway(); };
-    engine.onMedalEarned = (m) { if (mounted) _showMedal(m); };
-    engine.onStreakMilestone = (m) { if (mounted) _showStreakMilestone(m); };
+    _horizontalPageCtrl.addListener(_onHorizontalPageChanged);
+    engine.onStateChanged = () {
+      if (mounted) setState(() {});
+    };
+    engine.onEvolutionReady = () {
+      if (mounted) _showEvolution();
+    };
+    engine.onFarewellReady = () {
+      if (mounted) _showFarewell();
+    };
+    engine.onRunawayReady = () {
+      if (mounted) _showRunaway();
+    };
+    engine.onMedalEarned = (m) {
+      if (mounted) _showMedal(m);
+    };
+    engine.onStreakMilestone = (m) {
+      if (mounted) _showStreakMilestone(m);
+    };
 
     _bounceController = AnimationController(
       duration: const Duration(milliseconds: 800),
@@ -91,12 +109,34 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  void _onHorizontalPageChanged() {
+    if (_horizontalPageCtrl.page != null) {
+      if (_horizontalPageCtrl.page! >= 0.5 && !_isPokedexBgm) {
+        _isPokedexBgm = true;
+        AudioService().playBgm('pokemon_center');
+      } else if (_horizontalPageCtrl.page! < 0.5 && _isPokedexBgm) {
+        _isPokedexBgm = false;
+        engine.applyBgm();
+      }
+    }
+  }
+
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _bounceController.dispose();
     _pageCtrl.dispose();
     _horizontalPageCtrl.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      AudioService().pauseBgm();
+    } else if (state == AppLifecycleState.resumed) {
+      AudioService().resumeBgm();
+    }
   }
 
   @override
@@ -127,7 +167,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           SettingsScreen(
             engine: engine,
             onOk: () {
-              _pageCtrl.animateToPage(1, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+              _pageCtrl.animateToPage(
+                1,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              );
             },
           ),
 
@@ -247,7 +291,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     );
                                   },
                                   child: _isEatingCandy
-                                      ? Icon(Icons.cake, color: _eatingColor, size: 32)
+                                      ? Icon(
+                                          Icons.cake,
+                                          color: _eatingColor,
+                                          size: 32,
+                                        )
                                       : Transform.scale(
                                           scale: 1.5,
                                           child: BerryIcon(color: _eatingColor),
@@ -267,14 +315,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   curve: Curves.easeOut,
                                   builder: (context, val, child) {
                                     return Opacity(
-                                      opacity: val < 0.2 ? val * 5 : (val > 0.8 ? (1.0 - val) * 5 : 1.0),
+                                      opacity: val < 0.2
+                                          ? val * 5
+                                          : (val > 0.8 ? (1.0 - val) * 5 : 1.0),
                                       child: Transform.translate(
                                         offset: Offset(0, -40 * val),
                                         child: child,
                                       ),
                                     );
                                   },
-                                  child: const Icon(Icons.favorite, color: Colors.redAccent, size: 32),
+                                  child: const Icon(
+                                    Icons.favorite,
+                                    color: Colors.redAccent,
+                                    size: 32,
+                                  ),
                                 ),
                               ),
 
@@ -294,18 +348,40 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   },
                                   child: Container(
                                     width: size.width * 0.7,
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFF09000), // Laranja puxado pra ouro
+                                      color: const Color(
+                                        0xFFF09000,
+                                      ), // Laranja puxado pra ouro
                                       borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: Colors.black87, width: 2),
+                                      border: Border.all(
+                                        color: Colors.black87,
+                                        width: 2,
+                                      ),
                                     ),
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        Text(tr('medal'), style: const TextStyle(fontFamily: 'monospace', fontSize: 16, color: Colors.black, fontWeight: FontWeight.bold)),
+                                        Text(
+                                          tr('medal'),
+                                          style: const TextStyle(
+                                            fontFamily: 'monospace',
+                                            fontSize: 16,
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
                                         const SizedBox(height: 2),
-                                        Text(_medalName, style: const TextStyle(fontFamily: 'monospace', fontSize: 10, color: Colors.black87)),
+                                        Text(
+                                          _medalName,
+                                          style: const TextStyle(
+                                            fontFamily: 'monospace',
+                                            fontSize: 10,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -344,7 +420,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   child: Container(
                                     padding: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
-                                      color: Colors.amber.withValues(alpha: 0.8),
+                                      color: Colors.amber.withValues(
+                                        alpha: 0.8,
+                                      ),
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(
@@ -374,10 +452,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   if (_isBathing) return;
                                   engine.bath();
                                   setState(() => _isBathing = true);
-                                  Future.delayed(const Duration(seconds: 2), () {
-                                    if (mounted)
-                                      setState(() => _isBathing = false);
-                                  });
+                                  Future.delayed(
+                                    const Duration(seconds: 2),
+                                    () {
+                                      if (mounted)
+                                        setState(() => _isBathing = false);
+                                    },
+                                  );
                                 },
                                 sleeping: pet.sleeping,
                                 width: size.width * 0.75,
@@ -389,23 +470,50 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               Positioned(
                                 bottom: size.height * 0.22,
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withValues(alpha: 0.95),
                                     borderRadius: BorderRadius.circular(20),
                                     border: Border.all(color: Colors.black12),
-                                    boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 6, offset: Offset(0, 3))],
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Colors.black26,
+                                        blurRadius: 6,
+                                        offset: Offset(0, 3),
+                                      ),
+                                    ],
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      _foodItemBtn(Colors.redAccent, () => _feed(0, Colors.redAccent)),
+                                      _foodItemBtn(
+                                        Colors.redAccent,
+                                        () => _feed(0, Colors.redAccent),
+                                      ),
                                       const SizedBox(width: 12),
-                                      _foodItemBtn(Colors.lightBlue, () => _feed(1, Colors.lightBlue)),
+                                      _foodItemBtn(
+                                        Colors.lightBlue,
+                                        () => _feed(1, Colors.lightBlue),
+                                      ),
                                       const SizedBox(width: 12),
-                                      _foodItemBtn(Colors.greenAccent[400]!, () => _feed(2, Colors.greenAccent[400]!)),
+                                      _foodItemBtn(
+                                        Colors.greenAccent[400]!,
+                                        () =>
+                                            _feed(2, Colors.greenAccent[400]!),
+                                      ),
                                       const SizedBox(width: 12),
-                                      _foodItemBtn(Colors.pinkAccent, () => _feed(-1, Colors.pinkAccent, candy: true), isCandy: true),
+                                      _foodItemBtn(
+                                        Colors.pinkAccent,
+                                        () => _feed(
+                                          -1,
+                                          Colors.pinkAccent,
+                                          candy: true,
+                                        ),
+                                        isCandy: true,
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -444,7 +552,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final entry = dex[pet.speciesId];
     final spriteSize = size.width * 0.45;
     final folder = pet.shiny ? 'shiny' : 'normal';
-    
+
     // Determine action based on state
     String action = 'idle';
     double offsetX = 0.0;
@@ -468,14 +576,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       if (sec >= 0 && sec < 5) {
         action = 'walk';
         // Walk right
-        offsetX = ((ms % 5000) / 5000.0) * (size.width * 0.4) - (size.width * 0.2);
+        offsetX =
+            ((ms % 5000) / 5000.0) * (size.width * 0.4) - (size.width * 0.2);
         flipX = true; // Sprites face left by default, so we flip to face right
       } else if (sec >= 5 && sec < 10) {
         action = 'idle';
       } else if (sec >= 10 && sec < 15) {
         action = 'walk';
         // Walk left
-        offsetX = (size.width * 0.2) - ((ms % 5000) / 5000.0) * (size.width * 0.4);
+        offsetX =
+            (size.width * 0.2) - ((ms % 5000) / 5000.0) * (size.width * 0.4);
         flipX = false; // Face left
       } else if (sec >= 15 && sec < 18) {
         action = 'idle';
@@ -484,8 +594,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       }
     }
 
-    final path = 'assets/sprites/$folder/${pet.speciesId.toString().padLeft(3, '0')}_$action.gif';
-    final fallbackPath = 'assets/sprites/$folder/${pet.speciesId.toString().padLeft(3, '0')}_idle.gif';
+    final path =
+        'assets/sprites/$folder/${pet.speciesId.toString().padLeft(3, '0')}_$action.gif';
+    final fallbackPath =
+        'assets/sprites/$folder/${pet.speciesId.toString().padLeft(3, '0')}_idle.gif';
 
     Widget sprite = Image.asset(
       path,
@@ -536,8 +648,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
         child: Center(
           child: isCandy
-            ? Icon(Icons.cake, color: color, size: 18)
-            : BerryIcon(color: color),
+              ? Icon(Icons.cake, color: color, size: 18)
+              : BerryIcon(color: color),
         ),
       ),
     );
@@ -557,7 +669,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       _eatingColor = color;
       _eatKey = UniqueKey();
     });
-    
+
     _showHeartAnimation();
 
     Future.delayed(const Duration(milliseconds: 1500), () {
@@ -616,7 +728,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               const SizedBox(height: 4),
               Text(
                 tr('goodbyeQ'),
-                style: const TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 15,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
@@ -628,8 +744,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     customBorder: const CircleBorder(),
                     child: Container(
                       padding: const EdgeInsets.all(12),
-                      decoration: const BoxDecoration(color: Colors.white12, shape: BoxShape.circle),
-                      child: const Icon(Icons.close, color: Colors.white, size: 24),
+                      decoration: const BoxDecoration(
+                        color: Colors.white12,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                     ),
                   ),
                   InkWell(
@@ -639,16 +762,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) =>
-                              CeremonyScreen(engine: engine, type: Ceremony.farewell),
+                          builder: (_) => CeremonyScreen(
+                            engine: engine,
+                            type: Ceremony.farewell,
+                          ),
                         ),
                       );
                     },
                     customBorder: const CircleBorder(),
                     child: Container(
                       padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(color: Colors.pink.withOpacity(0.2), shape: BoxShape.circle),
-                      child: const Icon(Icons.check, color: Colors.pinkAccent, size: 24),
+                      decoration: BoxDecoration(
+                        color: Colors.pink.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.check,
+                        color: Colors.pinkAccent,
+                        size: 24,
+                      ),
                     ),
                   ),
                 ],
@@ -676,7 +808,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               const SizedBox(height: 4),
               Text(
                 tr('releaseQ'),
-                style: const TextStyle(fontSize: 15, color: Colors.white, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 15,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
@@ -688,8 +824,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     customBorder: const CircleBorder(),
                     child: Container(
                       padding: const EdgeInsets.all(12),
-                      decoration: const BoxDecoration(color: Colors.white12, shape: BoxShape.circle),
-                      child: const Icon(Icons.close, color: Colors.white, size: 24),
+                      decoration: const BoxDecoration(
+                        color: Colors.white12,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                     ),
                   ),
                   InkWell(
@@ -699,16 +842,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) =>
-                              CeremonyScreen(engine: engine, type: Ceremony.release),
+                          builder: (_) => CeremonyScreen(
+                            engine: engine,
+                            type: Ceremony.release,
+                          ),
                         ),
                       );
                     },
                     customBorder: const CircleBorder(),
                     child: Container(
                       padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(color: Colors.red.withOpacity(0.2), shape: BoxShape.circle),
-                      child: const Icon(Icons.check, color: Colors.redAccent, size: 24),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.check,
+                        color: Colors.redAccent,
+                        size: 24,
+                      ),
                     ),
                   ),
                 ],
@@ -732,15 +884,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   String _getMedalName(int medal) {
     switch (medal) {
-      case Medals.lv10: return 'LV 10';
-      case Medals.lv25: return 'LV 25';
-      case Medals.lv50: return 'LV 50';
-      case Medals.streak7: return '7 DAY STREAK';
-      case Medals.bond: return 'BEST FRIEND';
-      case Medals.finalForm: return 'FINAL FORM';
-      case Medals.fit: return 'FITNESS';
-      case Medals.berry: return 'BERRY';
-      default: return 'MYSTERY';
+      case Medals.lv10:
+        return 'LV 10';
+      case Medals.lv25:
+        return 'LV 25';
+      case Medals.lv50:
+        return 'LV 50';
+      case Medals.streak7:
+        return '7 DAY STREAK';
+      case Medals.bond:
+        return 'BEST FRIEND';
+      case Medals.finalForm:
+        return 'FINAL FORM';
+      case Medals.fit:
+        return 'FITNESS';
+      case Medals.berry:
+        return 'BERRY';
+      default:
+        return 'MYSTERY';
     }
   }
 
@@ -756,9 +917,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         backgroundColor: Colors.orange.withValues(alpha: 0.9),
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.only(bottom: 20, left: 15, right: 15),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
     );
   }

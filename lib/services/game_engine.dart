@@ -58,6 +58,9 @@ class GameEngine {
       const Duration(milliseconds: petTickMs),
       (_) => _tick(),
     );
+    
+    // Iniciar BGM
+    applyBgm();
   }
 
   Future<void> reloadEngine() async {
@@ -71,6 +74,7 @@ class GameEngine {
     // 3. Restaurar configurações
     currentLang = Lang.values[_pet.langIndex];
     AudioService().enabled = _pet.soundOn;
+    applyBgm();
     
     // 4. Sincronizar o relógio com os dados baixados
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
@@ -97,6 +101,22 @@ class GameEngine {
   void dispose() {
     _tickTimer?.cancel();
     _save();
+  }
+
+  // ── BGM (Background Music) ────────────────────────────────────────────────
+
+  static const List<String> _bgmTracks = ['pallet_town', 'littleroot_town', 'none'];
+
+  String get bgmTrackName => _bgmTracks[_pet.bgmIndex];
+
+  void applyBgm() {
+    AudioService().playBgm(bgmTrackName);
+  }
+
+  void bgmCycle() {
+    _pet.bgmIndex = (_pet.bgmIndex + 1) % _bgmTracks.length;
+    _save();
+    applyBgm();
   }
 
   // ── Progressão Offline (port de Pet::syncClock) ───────────────────────────

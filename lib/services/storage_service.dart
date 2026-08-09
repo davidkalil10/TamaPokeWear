@@ -118,12 +118,13 @@ class PetStateAdapter extends TypeAdapter<PetState> {
       pendingSave: fields[43] as bool? ?? false,
       langIndex: fields[44] as int? ?? 1,
       soundOn: fields[45] as bool? ?? true,
+      bgmIndex: fields[46] as int? ?? 0,
     );
   }
 
   @override
   void write(BinaryWriter writer, PetState obj) {
-    writer.writeByte(46); // number of fields
+    writer.writeByte(47); // number of fields
     writer.writeByte(0); writer.write(obj.fullness);
     writer.writeByte(1); writer.write(obj.joy);
     writer.writeByte(2); writer.write(obj.energy);
@@ -170,5 +171,6 @@ class PetStateAdapter extends TypeAdapter<PetState> {
     writer.writeByte(43); writer.write(obj.pendingSave);
     writer.writeByte(44); writer.write(obj.langIndex);
     writer.writeByte(45); writer.write(obj.soundOn);
+    writer.writeByte(46); writer.write(obj.bgmIndex);
   }
 }

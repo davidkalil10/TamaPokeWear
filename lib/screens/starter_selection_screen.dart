@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/audio_service.dart';
 import '../services/game_engine.dart';
 import '../theme/wear_theme.dart';
 import '../data/pokedex.dart';
@@ -14,6 +15,12 @@ class StarterSelectionScreen extends StatefulWidget {
 
 class _StarterSelectionScreenState extends State<StarterSelectionScreen> {
   int? _selectedStarter;
+
+  @override
+  void initState() {
+    super.initState();
+    AudioService().playBgm('title_screen');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -184,6 +191,7 @@ class _StarterSelectionScreenState extends State<StarterSelectionScreen> {
                       // Confirm
                       GestureDetector(
                         onTap: () {
+                          widget.engine.applyBgm();
                           widget.engine.chooseStarter(_selectedStarter!);
                         },
                         child: Container(

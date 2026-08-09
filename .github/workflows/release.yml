@@ -36,18 +36,19 @@ jobs:
           pip install Pillow
           python tools/download_sprites.py
           python tools/generate_sounds.py
+          python tools/download_bgm.py
 
       - name: Decode Keystore
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/tamapoke.jks
 
-      - name: Build APK (Universal - Debug)
-        run: flutter build apk --debug
+      - name: Build APK (Split per ABI - Debug)
+        run: flutter build apk --debug --split-per-abi
 
       - name: Create Release and Upload APK
         uses: softprops/action-gh-release@v1
         with:
-          files: build/app/outputs/flutter-apk/app-debug.apk
+          files: build/app/outputs/flutter-apk/app-armeabi-v7a-debug.apk
           tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'latest-manual' }}
           name: Release ${{ github.ref_type == 'tag' && github.ref_name || 'Manual Build' }}
           draft: false

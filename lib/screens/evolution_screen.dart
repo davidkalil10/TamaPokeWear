@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/game_engine.dart';
+import '../services/audio_service.dart';
 
 class EvolutionScreen extends StatefulWidget {
   final GameEngine engine;
@@ -15,6 +16,7 @@ class _EvolutionScreenState extends State<EvolutionScreen> {
   @override
   void initState() {
     super.initState();
+    AudioService().playBgm('evolution');
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
         setState(() {
@@ -26,6 +28,12 @@ class _EvolutionScreenState extends State<EvolutionScreen> {
         });
       }
     });
+  }
+
+  @override
+  void dispose() {
+    widget.engine.applyBgm(); // Restore normal BGM
+    super.dispose();
   }
 
   @override
