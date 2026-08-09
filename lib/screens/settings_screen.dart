@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../services/game_engine.dart';
 import '../services/audio_service.dart';
 import '../services/backup_service.dart';
+import '../services/updater_service.dart';
 import '../i18n/strings.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -21,6 +22,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final BackupService _backupService = BackupService();
   bool _isBackupLoading = false;
   DateTime? _lastBackupDate;
+
+  bool _isUpdating = false;
+  String _updateProgress = '';
 
   @override
   void initState() {
@@ -96,6 +100,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await _refreshBackupDate();
     }
     if (mounted) setState(() => _isBackupLoading = false);
+  }
+
+  Future<void> _doUpdateCheck() async {
+    setState(() {
+      _isUpdating = true;
+      _updateProgress = 'CHECKING...';
+    });
+    final url = await UpdaterService.checkForUpdate();
+    if (url != null) {
+      UpdaterService.downloadAndInstall(url).listen((event) {
+        if (mounted) {
+          setState(() {
+            _updateProgress = 'DL: ${event.value}%';
+          });
+        }
+      }, onDone: () {
+        if (mounted) setState(() => _isUpdating = false);
+      }, onError: (e) {
+        if (mounted) {
+          setState(() {
+            _updateProgress = 'ERROR';
+          });
+          Future.delayed(const Duration(seconds: 2), () {
+            if (mounted) setState(() => _isUpdating = false);
+          });
+        }
+      });
+    } else {
+      if (mounted) {
+        setState(() {
+          _updateProgress = 'UP TO DATE';
+        });
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) setState(() => _isUpdating = false);
+        });
+      }
+    }
   }
 
   @override
@@ -304,6 +345,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Text(_lastBackupDate != null ? 'Last: ${_lastBackupDate!.day}/${_lastBackupDate!.month} ${_lastBackupDate!.hour}:${_lastBackupDate!.minute.toString().padLeft(2,'0')}' : 'No backup found', 
                        style: const TextStyle(fontSize: 8, color: Colors.black54, fontFamily: 'monospace')),
                 ],
+              ),
+              
+            const SizedBox(height: 12),
+            // Update Section
+            if (_isUpdating)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(color: Colors.blueAccent, borderRadius: BorderRadius.circular(6)),
+                child: Text(_updateProgress, style: const TextStyle(color: Colors.white, fontSize: 10, fontFamily: 'monospace', fontWeight: FontWeight.bold)),
+              )
+            else
+              GestureDetector(
+                onTap: _doUpdateCheck,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(color: Colors.blueAccent, borderRadius: BorderRadius.circular(6)),
+                  child: const Text('CHECK UPDATE', style: TextStyle(color: Colors.white, fontSize: 10, fontFamily: 'monospace', fontWeight: FontWeight.bold)),
+                ),
               ),
               
             const SizedBox(height: 16),

@@ -37,6 +37,10 @@ jobs:
           python tools/download_sprites.py
           python tools/generate_sounds.py
 
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/tamapoke.jks
+
       - name: Build APK (Universal - Debug)
         run: flutter build apk --debug
 
