@@ -94,6 +94,15 @@ In addition to the original mechanics, this version introduces a persistent **PC
 - If you currently have an active Veteran and invoke another from the PC, the current one will be **safely saved back** to the PC.
 - If you invoke a PC Pokémon while raising a non-veteran (a pet that hasn't earned its Farewell yet), the current pet will be **permanently released** into the wild to make room.
 
+### ☁️ Cloud Save (Google Drive)
+This version includes an exclusive **Cloud Save** system powered by Google Drive! Never lose your companion again if you switch or reset your watch.
+- Your data is stored safely in a hidden `appDataFolder` on your Google Drive, meaning the app cannot read any of your personal files, and you won't accidentally delete your save.
+- 🟢 **[BKP UP]**: Uploads your current pet state to the cloud.
+- 🟠 **[DL SAVE]**: Downloads and seamlessly restores the cloud save directly into your smartwatch, syncing time automatically.
+- 🔴 **[DEL BKP]**: Deletes the cloud backup permanently.
+- 🔘 **[OUT]**: Logs out of your Google account.
+> **Note for Developers:** If you fork this project, you must set up your own OAuth 2.0 Client ID in the [Google Cloud Console](https://console.cloud.google.com/) (Application type: **Android**) and configure your own SHA-1 fingerprint for the Google Sign-In and Drive API to work.
+
 ### Bonds, Streaks, Medals, Pokédex
 - **Streak** (player-wide): first care each real day. Milestones at **3 / 7 / 30 / 100** days.
 - **Bond** (per pet): grows with affection (**cap +8/day**), cools on neglect.

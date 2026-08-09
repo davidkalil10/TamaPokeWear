@@ -60,6 +60,40 @@ class GameEngine {
     );
   }
 
+  Future<void> reloadEngine() async {
+    // 1. Fechar o armazenamento atual
+    await _storage.close();
+    
+    // 2. Re-inicializar e recarregar os dados substituídos pelo backup
+    await _storage.init();
+    _pet = await _storage.loadPet();
+    
+    // 3. Restaurar configurações
+    currentLang = Lang.values[_pet.langIndex];
+    AudioService().enabled = _pet.soundOn;
+    
+    // 4. Sincronizar o relógio com os dados baixados
+    final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    if (_pet.lastSeenEpoch > 0) {
+      _syncClock(now);
+    }
+    _pet.lastSeenEpoch = now;
+    
+    // 5. Atualizar a tela
+    onStateChanged?.call();
+  }
+
+  Future<void> prepareForBackup() async {
+    _save(); // Assegura que o último tick foi salvo
+    await Future.delayed(const Duration(milliseconds: 100)); // Pequeno delay para a queue do Hive
+    await _storage.close(); // Fecha o arquivo garantindo que está no disco
+  }
+
+  Future<void> resumeAfterBackup() async {
+    await _storage.init(); // Reabre o Hive
+    _pet = await _storage.loadPet(); // Recarrega os objetos
+  }
+
   void dispose() {
     _tickTimer?.cancel();
     _save();
@@ -626,6 +660,8 @@ class GameEngine {
     if (_pet.bond < 100) {
       _pet.bond = (_pet.bond + 1).clamp(0, 100);
     }
+    
+    _checkMedals(); // Verifica imediatamente se o bond (ou streak) gerou medalha
   }
 
   // ── Battle stats helpers ──────────────────────────────────────────────────

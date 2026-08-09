@@ -34,6 +34,10 @@ class StorageService {
     await _box.clear();
   }
 
+  Future<void> close() async {
+    await _box.close();
+  }
+
   // ── PC Box (Archive) ──────────────────────────────────────────────────────
   
   String _archiveKey(int speciesId, bool isShiny) => 'archived_${speciesId}_$isShiny';

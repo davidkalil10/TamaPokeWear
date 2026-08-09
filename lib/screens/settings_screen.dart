@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../services/game_engine.dart';
 import '../services/audio_service.dart';
+import '../services/backup_service.dart';
 import '../i18n/strings.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -17,12 +18,84 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late Timer _timer;
   DateTime _now = DateTime.now();
 
+  final BackupService _backupService = BackupService();
+  bool _isBackupLoading = false;
+  DateTime? _lastBackupDate;
+
   @override
   void initState() {
     super.initState();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() => _now = DateTime.now());
     });
+    _initBackup();
+  }
+
+  Future<void> _initBackup() async {
+    await _backupService.signInSilently();
+    if (_backupService.currentUser != null) {
+      _refreshBackupDate();
+    } else {
+      if (mounted) setState(() {});
+    }
+  }
+
+  Future<void> _refreshBackupDate() async {
+    final date = await _backupService.getBackupDate();
+    if (mounted) setState(() => _lastBackupDate = date);
+  }
+
+  Future<void> _loginGoogle() async {
+    setState(() => _isBackupLoading = true);
+    await _backupService.signIn();
+    if (_backupService.currentUser != null) {
+      await _refreshBackupDate();
+    }
+    if (mounted) setState(() => _isBackupLoading = false);
+  }
+
+  Future<void> _logoutGoogle() async {
+    setState(() => _isBackupLoading = true);
+    await _backupService.signOut();
+    if (mounted) setState(() {
+      _isBackupLoading = false;
+      _lastBackupDate = null;
+    });
+  }
+
+  Future<void> _doBackup() async {
+    setState(() => _isBackupLoading = true);
+    
+    // Assegura que os dados estão totalmente descarregados no arquivo no disco
+    await widget.engine.prepareForBackup();
+    
+    final success = await _backupService.backupData();
+    
+    // Reabre o Hive de forma transparente
+    await widget.engine.resumeAfterBackup();
+    
+    if (success) {
+      await _refreshBackupDate();
+    }
+    if (mounted) setState(() => _isBackupLoading = false);
+  }
+
+  Future<void> _doRestore() async {
+    setState(() => _isBackupLoading = true);
+    final success = await _backupService.restoreData();
+    if (success) {
+      await widget.engine.reloadEngine();
+    }
+    if (mounted) setState(() => _isBackupLoading = false);
+  }
+
+  Future<void> _doDeleteBackup() async {
+    setState(() => _isBackupLoading = true);
+    final success = await _backupService.deleteBackup();
+    if (success) {
+      await _refreshBackupDate();
+    }
+    if (mounted) setState(() => _isBackupLoading = false);
   }
 
   @override
@@ -163,6 +236,76 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ],
             ),
+            const SizedBox(height: 16),
+            
+            // Cloud Save Section
+            const Text('CLOUD SAVE', style: TextStyle(fontFamily: 'monospace', fontSize: 10, color: Colors.black87, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
+            if (_isBackupLoading)
+              const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black87))
+            else if (_backupService.currentUser == null)
+              GestureDetector(
+                onTap: _loginGoogle,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(color: Colors.blueAccent, borderRadius: BorderRadius.circular(6)),
+                  child: const Text('LOGIN GOOGLE', style: TextStyle(color: Colors.white, fontSize: 10, fontFamily: 'monospace', fontWeight: FontWeight.bold)),
+                ),
+              )
+            else
+              Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: _doBackup,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                          decoration: BoxDecoration(color: const Color(0xFF2E7D32), borderRadius: BorderRadius.circular(6)),
+                          child: const Text('BKP UP', style: TextStyle(color: Colors.white, fontSize: 9, fontFamily: 'monospace', fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      GestureDetector(
+                        onTap: _doRestore,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                          decoration: BoxDecoration(color: Colors.orange, borderRadius: BorderRadius.circular(6)),
+                          child: const Text('DL SAVE', style: TextStyle(color: Colors.white, fontSize: 9, fontFamily: 'monospace', fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: _doDeleteBackup,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                          decoration: BoxDecoration(color: Colors.redAccent, borderRadius: BorderRadius.circular(6)),
+                          child: const Text('DEL BKP', style: TextStyle(color: Colors.white, fontSize: 9, fontFamily: 'monospace', fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      GestureDetector(
+                        onTap: _logoutGoogle,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                          decoration: BoxDecoration(color: Colors.blueGrey, borderRadius: BorderRadius.circular(6)),
+                          child: const Text('OUT', style: TextStyle(color: Colors.white, fontSize: 9, fontFamily: 'monospace', fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(_lastBackupDate != null ? 'Last: ${_lastBackupDate!.day}/${_lastBackupDate!.month} ${_lastBackupDate!.hour}:${_lastBackupDate!.minute.toString().padLeft(2,'0')}' : 'No backup found', 
+                       style: const TextStyle(fontSize: 8, color: Colors.black54, fontFamily: 'monospace')),
+                ],
+              ),
+              
             const SizedBox(height: 16),
             // OK button
             GestureDetector(

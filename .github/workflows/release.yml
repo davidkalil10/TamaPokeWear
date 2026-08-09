@@ -37,13 +37,13 @@ jobs:
           python tools/download_sprites.py
           python tools/generate_sounds.py
 
-      - name: Build APK (Split per ABI - Debug)
-        run: flutter build apk --split-per-abi --debug
+      - name: Build APK (Universal - Debug)
+        run: flutter build apk --debug
 
       - name: Create Release and Upload APK
         uses: softprops/action-gh-release@v1
         with:
-          files: build/app/outputs/flutter-apk/app-armeabi-v7a-debug.apk
+          files: build/app/outputs/flutter-apk/app-debug.apk
           tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'latest-manual' }}
           name: Release ${{ github.ref_type == 'tag' && github.ref_name || 'Manual Build' }}
           draft: false

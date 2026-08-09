@@ -1,7 +1,7 @@
 name: tamapokewear
 description: "TamaPoke for Android Wear - A Pokemon Tamagotchi on your wrist"
 publish_to: 'none'
-version: 1.0.5+3
+version: 1.0.6+4
 
 environment:
   sdk: ^3.10.7
@@ -19,6 +19,10 @@ dependencies:
   timezone: ^0.10.1
   flutter_timezone: ^5.1.0
   wakelock_plus: ^1.6.1
+  google_sign_in: 6.1.6
+  googleapis: ^16.0.0
+  googleapis_auth: ^2.3.3
+  http: ^1.6.0
 
 dev_dependencies:
   flutter_test:
