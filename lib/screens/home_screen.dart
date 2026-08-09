@@ -747,9 +747,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   void _showStreakMilestone(int days) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('🔥 $days ${tr('great')}'),
-        duration: const Duration(seconds: 2),
-        backgroundColor: Colors.orange.withValues(alpha: 0.8),
+        content: Text(
+          '🔥 $days ${tr('great')} 🔥',
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+        ),
+        duration: const Duration(seconds: 3),
+        backgroundColor: Colors.orange.withValues(alpha: 0.9),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.only(bottom: 20, left: 15, right: 15),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
       ),
     );
   }

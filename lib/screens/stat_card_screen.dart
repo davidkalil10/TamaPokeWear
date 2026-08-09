@@ -86,7 +86,7 @@ class StatCardScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('BOND ', style: textStyle),
+              Text('${tr('bond')} ', style: textStyle),
               Container(
                 width: 60,
                 height: 6,
@@ -96,7 +96,7 @@ class StatCardScreen extends StatelessWidget {
                 ),
                 child: FractionallySizedBox(
                   alignment: Alignment.centerLeft,
-                  widthFactor: 0.1,
+                  widthFactor: (pet.bond / 100).clamp(0.0, 1.0),
                   child: Container(
                     decoration: BoxDecoration(
                       color: Colors.pinkAccent,
@@ -105,7 +105,7 @@ class StatCardScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              Text('  10', style: textStyle),
+              Text('  ${pet.bond.toString().padLeft(2, ' ')}', style: textStyle),
             ],
           ),
           const SizedBox(height: 8),

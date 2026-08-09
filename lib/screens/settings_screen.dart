@@ -34,6 +34,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _toggleSound() {
     setState(() {
       AudioService().enabled = !AudioService().enabled;
+      widget.engine.pet.soundOn = AudioService().enabled;
+      widget.engine.forceSave();
     });
     AudioService().playTap();
   }
@@ -43,6 +45,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {
       final nextIndex = (currentLang.index + 1) % Lang.values.length;
       currentLang = Lang.values[nextIndex];
+      widget.engine.pet.langIndex = nextIndex;
+      widget.engine.forceSave();
     });
     // Triggers rebuild on the rest of the app to reflect language
     widget.engine.onStateChanged?.call();

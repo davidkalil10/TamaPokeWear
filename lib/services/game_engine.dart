@@ -43,6 +43,8 @@ class GameEngine {
 
   Future<void> init() async {
     _pet = await _storage.loadPet();
+    currentLang = Lang.values[_pet.langIndex];
+    AudioService().enabled = _pet.soundOn;
 
     // Progressão offline
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;

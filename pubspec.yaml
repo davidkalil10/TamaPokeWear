@@ -1,7 +1,7 @@
 name: tamapokewear
 description: "TamaPoke for Android Wear - A Pokemon Tamagotchi on your wrist"
 publish_to: 'none'
-version: 1.0.4+2
+version: 1.0.5+3
 
 environment:
   sdk: ^3.10.7
