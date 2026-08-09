@@ -3,6 +3,8 @@ import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:flutter/services.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -36,6 +38,20 @@ class NotificationService {
         // App abre quando a notificação é clicada
       },
     );
+
+    final androidImplementation = flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+    await androidImplementation?.createNotificationChannel(
+      const AndroidNotificationChannel(
+        'tamapoke_care_channel',
+        'Alerta de Cuidados',
+        description: 'Avisa quando o seu Pokémon estiver precisando de ajuda',
+        importance: Importance.max,
+        enableVibration: true,
+        playSound: true,
+      ),
+    );
     
     _isInitialized = true;
   }
@@ -64,8 +80,12 @@ class NotificationService {
       try {
         final String dexNum = speciesId.toString().padLeft(3, '0');
         final ByteData byteData = await rootBundle.load('assets/sprites/thumbs/$dexNum.png');
-        final Uint8List bytes = byteData.buffer.asUint8List();
-        largeIcon = ByteArrayAndroidBitmap(bytes);
+        
+        final Directory tempDir = await getTemporaryDirectory();
+        final File file = File('${tempDir.path}/thumb_$dexNum.png');
+        await file.writeAsBytes(byteData.buffer.asUint8List(), flush: true);
+        
+        largeIcon = FilePathAndroidBitmap(file.path);
       } catch (e) {
         // Ignora se não achar o thumb
       }
@@ -88,7 +108,7 @@ class NotificationService {
           largeIcon: largeIcon,
         ),
       ),
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
     );

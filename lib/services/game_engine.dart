@@ -789,5 +789,26 @@ class GameEngine {
         );
       }
     }
+
+    // Evolução: se não for a forma final, calcula quantos minutos faltam para a idade da evolução
+    final entry = dex[_pet.speciesId];
+    if (!entry.isFinalForm) {
+      final requiredLevel = entry.evolveLevel + _pet.careMistakes;
+      final targetAgeMins = (requiredLevel - 1) * minutesPerLevel;
+      
+      if (_pet.ageMinutes < targetAgeMins) {
+        final minsToEvolve = targetAgeMins - _pet.ageMinutes;
+        // Só agenda se faltar pelo menos 1 minuto e se as estatísticas não estiverem muito baixas (previsão otimista)
+        if (minsToEvolve >= 1 && _pet.lowestStat >= 40) {
+          NotificationService().scheduleCareNotification(
+            5,
+            now.add(Duration(minutes: minsToEvolve)),
+            'Evolução Pronta!',
+            'Seu Pokémon atingiu o nível necessário para evoluir!',
+            speciesId: _pet.speciesId,
+          );
+        }
+      }
+    }
   }
 }
