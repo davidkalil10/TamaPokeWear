@@ -1,15 +1,13 @@
-import 'package:audioplayers/audioplayers.dart';
+import 'package:just_audio/just_audio.dart';
 
 class AudioService {
   static final AudioService _instance = AudioService._internal();
   factory AudioService() => _instance;
   AudioService._internal();
 
-  final AudioPlayer _player = AudioPlayer();
   final AudioPlayer _bgmPlayer = AudioPlayer();
   bool _enabled = true;
   String? _currentBgmTrack;
-  bool _isBgmPlayingBeforeSfx = false;
 
   bool get enabled => _enabled;
   set enabled(bool val) {
@@ -17,31 +15,13 @@ class AudioService {
     if (!val) {
       _bgmPlayer.pause();
     } else if (_currentBgmTrack != null && _currentBgmTrack != 'none') {
-      _bgmPlayer.resume();
+      _bgmPlayer.play();
     }
   }
 
   Future<void> init() async {
-    // BGM config
-    await _bgmPlayer.setReleaseMode(ReleaseMode.loop);
-    await _bgmPlayer.setAudioContext(AudioContext(
-      android: AudioContextAndroid(
-        contentType: AndroidContentType.music,
-        usageType: AndroidUsageType.game,
-        audioFocus: AndroidAudioFocus.none,
-      ),
-    ));
-
-    // SFX config
-    await _player.setReleaseMode(ReleaseMode.stop);
-    await _player.setAudioContext(AudioContext(
-      android: AudioContextAndroid(
-        contentType: AndroidContentType.sonification,
-        usageType: AndroidUsageType.assistanceSonification,
-        audioFocus: AndroidAudioFocus.none,
-      ),
-    ));
-
+    // just_audio handles AudioContext out of the box very well.
+    await _bgmPlayer.setLoopMode(LoopMode.one);
   }
 
   // --- BGM Methods ---
@@ -54,8 +34,11 @@ class AudioService {
       await _bgmPlayer.stop();
       return;
     }
-    await _bgmPlayer.setReleaseMode(ReleaseMode.loop);
-    await _bgmPlayer.play(AssetSource('bgm/$trackName.mp3'));
+    
+    // just_audio uses setAsset instead of AssetSource
+    await _bgmPlayer.setAsset('assets/bgm/$trackName.mp3');
+    await _bgmPlayer.setLoopMode(LoopMode.one);
+    _bgmPlayer.play();
   }
 
   Future<void> pauseBgm() async {
@@ -64,7 +47,7 @@ class AudioService {
 
   Future<void> resumeBgm() async {
     if (_enabled && _currentBgmTrack != null && _currentBgmTrack != 'none') {
-      await _bgmPlayer.resume();
+      await _bgmPlayer.play();
     }
   }
 
@@ -76,7 +59,10 @@ class AudioService {
 
   Future<void> play(String sfx) async {
     if (!_enabled) return;
-    await _player.play(AssetSource('sounds/$sfx.wav'));
+    final p = AudioPlayer();
+    await p.setAsset('assets/sounds/$sfx.wav');
+    // In just_audio, play() returns a future that completes when the sound finishes playing!
+    p.play().then((_) => p.dispose());
   }
 
   void playTap() => play('tap');
