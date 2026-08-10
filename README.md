@@ -175,7 +175,17 @@ python3 tools/generate_sounds.py
 
 This creates 10 Game-Boy-style WAV sound effects in `assets/sounds/`. No external libraries required — pure Python only.
 
-### 4. Build and run
+### 4. Download background music
+
+> **⚠️ Music is NOT included** for copyright reasons.
+
+```bash
+python3 tools/download_bgm.py
+```
+
+This script downloads classic Pokémon background music tracks (MP3) directly from Archive.org into `assets/bgm/`.
+
+### 5. Build and run
 
 ```bash
 flutter pub get
@@ -200,6 +210,7 @@ assets/
 tools/
   download_sprites.py   # Downloads + converts PMD sprites to GIF
   generate_sounds.py    # Generates square-wave WAV sound effects
+  download_bgm.py       # Downloads classic BGM tracks from Archive.org
 ```
 
 ---
@@ -209,7 +220,7 @@ tools/
 | Package | Use |
 |---|---|
 | [`hive`](https://pub.dev/packages/hive) + [`hive_flutter`](https://pub.dev/packages/hive_flutter) | Local persistence (game save) |
-| [`audioplayers`](https://pub.dev/packages/audioplayers) | Sound effects |
+| [`just_audio`](https://pub.dev/packages/just_audio) | Sound effects & Background Music |
 | [`wear_plus`](https://pub.dev/packages/wear_plus) | WearOS integration |
 | [`flutter_local_notifications`](https://pub.dev/packages/flutter_local_notifications) | Care reminders |
 | [`google_fonts`](https://pub.dev/packages/google_fonts) | Typography |
