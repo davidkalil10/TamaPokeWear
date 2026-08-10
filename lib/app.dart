@@ -37,7 +37,6 @@ class _TamaPokeAppState extends State<TamaPokeApp> with WidgetsBindingObserver {
       widget.engine.scheduleFutureNotifications();
     } else if (state == AppLifecycleState.resumed) {
       widget.engine.resumeGame();
-      widget.engine.cancelAllNotifications();
     }
   }
 

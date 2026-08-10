@@ -9,6 +9,7 @@ class AudioService {
   final AudioPlayer _bgmPlayer = AudioPlayer();
   bool _enabled = true;
   String? _currentBgmTrack;
+  bool _isBgmPlayingBeforeSfx = false;
 
   bool get enabled => _enabled;
   set enabled(bool val) {
@@ -21,7 +22,7 @@ class AudioService {
   }
 
   Future<void> init() async {
-    // BGM: no audio focus so it never gets interrupted
+    // BGM config
     await _bgmPlayer.setReleaseMode(ReleaseMode.loop);
     await _bgmPlayer.setAudioContext(AudioContext(
       android: AudioContextAndroid(
@@ -31,7 +32,7 @@ class AudioService {
       ),
     ));
 
-    // SFX: also no audio focus so it won't steal from BGM
+    // SFX config
     await _player.setReleaseMode(ReleaseMode.stop);
     await _player.setAudioContext(AudioContext(
       android: AudioContextAndroid(
@@ -40,6 +41,7 @@ class AudioService {
         audioFocus: AndroidAudioFocus.none,
       ),
     ));
+
   }
 
   // --- BGM Methods ---
@@ -72,9 +74,9 @@ class AudioService {
 
   // --- SFX Methods ---
 
-  void play(String sfx) {
+  Future<void> play(String sfx) async {
     if (!_enabled) return;
-    _player.play(AssetSource('sounds/$sfx.wav'));
+    await _player.play(AssetSource('sounds/$sfx.wav'));
   }
 
   void playTap() => play('tap');

@@ -91,26 +91,51 @@ class NotificationService {
       }
     }
 
-    await flutterLocalNotificationsPlugin.zonedSchedule(
-      id,
-      title,
-      body,
-      tz.TZDateTime.from(scheduledDate, tz.local),
-      NotificationDetails(
-        android: AndroidNotificationDetails(
-          'tamapoke_care_channel',
-          'Alerta de Cuidados',
-          channelDescription: 'Avisa quando o seu Pokémon estiver precisando de ajuda',
-          importance: Importance.max,
-          priority: Priority.high,
-          enableVibration: true,
-          playSound: true,
-          largeIcon: largeIcon,
+    try {
+      await flutterLocalNotificationsPlugin.zonedSchedule(
+        id,
+        title,
+        body,
+        tz.TZDateTime.from(scheduledDate, tz.local),
+        NotificationDetails(
+          android: AndroidNotificationDetails(
+            'tamapoke_care_channel',
+            'Alerta de Cuidados',
+            channelDescription: 'Avisa quando o seu Pokémon estiver precisando de ajuda',
+            importance: Importance.max,
+            priority: Priority.high,
+            enableVibration: true,
+            playSound: true,
+            largeIcon: largeIcon,
+          ),
         ),
-      ),
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-    );
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+      );
+    } catch (e) {
+      // Se o relógio bloquear alarmes exatos (SecurityException), fazemos o fallback para inexato
+      await flutterLocalNotificationsPlugin.zonedSchedule(
+        id,
+        title,
+        body,
+        tz.TZDateTime.from(scheduledDate, tz.local),
+        NotificationDetails(
+          android: AndroidNotificationDetails(
+            'tamapoke_care_channel',
+            'Alerta de Cuidados',
+            channelDescription: 'Avisa quando o seu Pokémon estiver precisando de ajuda',
+            importance: Importance.max,
+            priority: Priority.high,
+            enableVibration: true,
+            playSound: true,
+            largeIcon: largeIcon,
+          ),
+        ),
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+      );
+    }
   }
 }

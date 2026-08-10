@@ -170,6 +170,16 @@ class GameEngine {
 
   void _tick() {
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    
+    // Se o timer do Flutter foi suspenso/congelado pelo sistema (ex: Doze mode no WearOS),
+    // o tempo passou mas o _tick não rodou. Delegamos para o _syncClock recuperar esse tempo!
+    if (_pet.lastSeenEpoch > 0 && (now - _pet.lastSeenEpoch) >= 110) {
+      _syncClock(now);
+      _autoSave();
+      _notifyChanged();
+      return;
+    }
+
     _pet.lastSeenEpoch = now;
 
     // Fim de cerimônia → novo ovo
@@ -739,6 +749,7 @@ class GameEngine {
     if (_pet.lastSeenEpoch > 0) {
       _syncClock(now);
     }
+    _save();
     _notifyChanged();
   }
 
@@ -817,9 +828,8 @@ class GameEngine {
       }
     }
 
-    // Energia cai 1 por minuto se acordado (e peso > 50 dobra a queda, mas simplificaremos)
+    // Energia cai 1 por minuto se acordado (e peso > 50 dobra a queda)
     if (!_pet.sleeping && _pet.energy > 20) {
-      // Se weight > 50, cai 2 por min. Senão 1 por min.
       final dropRate = _pet.weight > 50 ? 2 : 1;
       final minsToTired = (_pet.energy - 20) / dropRate;
       if (minsToTired >= 2) {

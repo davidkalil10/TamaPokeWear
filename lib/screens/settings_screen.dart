@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../services/game_engine.dart';
 import '../services/audio_service.dart';
 import '../services/backup_service.dart';
+import '../services/notification_service.dart';
 import '../i18n/strings.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -332,6 +333,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ],
               ),
               
+            const SizedBox(height: 16),
+            const Text('NOTIFICATIONS', style: TextStyle(fontFamily: 'monospace', fontSize: 10, color: Colors.black87, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    AudioService().playTap();
+                    NotificationService().scheduleCareNotification(
+                      99,
+                      DateTime.now().add(const Duration(seconds: 5)),
+                      'Teste de Notificação',
+                      'As notificações estão funcionando!',
+                      speciesId: widget.engine.pet.speciesId,
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(color: Colors.deepPurple, borderRadius: BorderRadius.circular(6)),
+                    child: const Text('TEST (5s)', style: TextStyle(color: Colors.white, fontSize: 9, fontFamily: 'monospace', fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () async {
+                    AudioService().playTap();
+                    await NotificationService().requestPermissions();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(color: Colors.teal, borderRadius: BorderRadius.circular(6)),
+                    child: const Text('FIX ALARM', style: TextStyle(color: Colors.white, fontSize: 9, fontFamily: 'monospace', fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 16),
             // OK button
             GestureDetector(
