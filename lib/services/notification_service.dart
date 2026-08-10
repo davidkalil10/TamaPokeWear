@@ -3,6 +3,8 @@ import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/material.dart';
+import 'dart:ui' as ui;
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
@@ -78,16 +80,12 @@ class NotificationService {
     AndroidBitmap<Object>? largeIcon;
     if (speciesId != null && speciesId > 0) {
       try {
-        final String dexNum = speciesId.toString().padLeft(3, '0');
-        final ByteData byteData = await rootBundle.load('assets/sprites/thumbs/$dexNum.png');
-        
-        final Directory tempDir = await getTemporaryDirectory();
-        final File file = File('${tempDir.path}/thumb_$dexNum.png');
-        await file.writeAsBytes(byteData.buffer.asUint8List(), flush: true);
-        
-        largeIcon = FilePathAndroidBitmap(file.path);
+        final File? file = await _getScaledThumb(speciesId);
+        if (file != null) {
+          largeIcon = FilePathAndroidBitmap(file.path);
+        }
       } catch (e) {
-        // Ignora se não achar o thumb
+        // Ignora
       }
     }
 
@@ -107,6 +105,9 @@ class NotificationService {
             enableVibration: true,
             playSound: true,
             largeIcon: largeIcon,
+            styleInformation: largeIcon != null 
+                ? BigPictureStyleInformation(largeIcon, hideExpandedLargeIcon: true) 
+                : null,
           ),
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
@@ -130,6 +131,9 @@ class NotificationService {
             enableVibration: true,
             playSound: true,
             largeIcon: largeIcon,
+            styleInformation: largeIcon != null 
+                ? BigPictureStyleInformation(largeIcon, hideExpandedLargeIcon: true) 
+                : null,
           ),
         ),
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
@@ -137,5 +141,47 @@ class NotificationService {
             UILocalNotificationDateInterpretation.absoluteTime,
       );
     }
+  }
+
+  Future<File?> _getScaledThumb(int speciesId) async {
+    try {
+      final String dexNum = speciesId.toString().padLeft(3, '0');
+      final ByteData byteData = await rootBundle.load('assets/sprites/thumbs/$dexNum.png');
+      final Uint8List list = byteData.buffer.asUint8List();
+      
+      final ui.Codec codec = await ui.instantiateImageCodec(list);
+      final ui.FrameInfo frameInfo = await codec.getNextFrame();
+      final ui.Image image = frameInfo.image;
+      
+      // Aumenta a imagem em 3x para ocupar adequadamente o bloco da notificação no WearOS
+      final int scale = 3;
+      final int targetWidth = image.width * scale;
+      final int targetHeight = image.height * scale;
+      
+      final ui.PictureRecorder recorder = ui.PictureRecorder();
+      final ui.Canvas canvas = ui.Canvas(recorder);
+      
+      final Paint paint = Paint()..filterQuality = FilterQuality.none;
+      canvas.drawImageRect(
+        image,
+        Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
+        Rect.fromLTWH(0, 0, targetWidth.toDouble(), targetHeight.toDouble()),
+        paint,
+      );
+      
+      final ui.Picture picture = recorder.endRecording();
+      final ui.Image scaledImage = await picture.toImage(targetWidth, targetHeight);
+      final ByteData? pngBytes = await scaledImage.toByteData(format: ui.ImageByteFormat.png);
+      
+      if (pngBytes != null) {
+        final Directory tempDir = await getTemporaryDirectory();
+        final File file = File('${tempDir.path}/thumb_scaled_$dexNum.png');
+        await file.writeAsBytes(pngBytes.buffer.asUint8List(), flush: true);
+        return file;
+      }
+    } catch (e) {
+      debugPrint('Erro ao escalar sprite: $e');
+    }
+    return null;
   }
 }
