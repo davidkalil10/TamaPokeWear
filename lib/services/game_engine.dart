@@ -814,8 +814,8 @@ class GameEngine {
 
     final now = DateTime.now();
 
-    // Fome cai 2 por minuto
-    if (_pet.fullness > 20) {
+    // Fome cai 2 por minuto (se acordado, pois dormindo para no 30)
+    if (!_pet.sleeping && _pet.fullness > 20) {
       final minsToHungry = (_pet.fullness - 20) / 2;
       if (minsToHungry >= 2) {
         NotificationService().scheduleCareNotification(
@@ -843,8 +843,8 @@ class GameEngine {
       }
     }
 
-    // Higiene cai (1 + 4*poops) por minuto
-    if (_pet.hygiene > 20) {
+    // Higiene cai (1 + 4*poops) por minuto (se acordado, pois dormindo para no 45)
+    if (!_pet.sleeping && _pet.hygiene > 20) {
       final dropRate = 1 + 4 * _pet.poops;
       final minsToDirty = (_pet.hygiene - 20) / dropRate;
       if (minsToDirty >= 2) {
