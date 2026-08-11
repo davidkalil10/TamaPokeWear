@@ -26,6 +26,7 @@ This is a Flutter reimplementation of [TamaPoke](https://github.com/socquique/Ta
 | 🎮 **Retro Smart Cast** | The ultimate GBA, GBC & GB emulator for Android, built in Flutter with a Dart FFI bridge to a native C++ engine. 60 FPS performance, haptic virtual buttons, real-time library search and multi-language support. | [Website](https://davidkalil10.github.io/Retro-Smart-Cast-Website/) |
 | 🎸 **Cifraria** | Professional song library and guitar chord manager built in Flutter. Smart folders, setlist management, animated QR offline sharing, instant transposition, Google Drive sync, and Meta Quest VR support. | [Website](https://davidkalil10.github.io/Cifraria_Website/) |
 | 🏢 **Simulação Sem Ilusão** | A financial X-ray app for anyone buying off-plan real estate in Brazil. Simulates INCC impact, Caixa vs. bank financing, construction evolution, FGTS weight, and custom payment schedules — with clean charts and PDF export. | [Website](https://simulacaosemilusao.netlify.app/) |
+| 🎯 **PointerPro** | A serverless presentation and air mouse app for Android that connects directly to any PC via Bluetooth HID. Features gyroscope-powered cursor control, software-specific shortcut profiles, smart haptic timers, and Wear OS smartwatch support. | [Google Play](https://play.google.com/store/apps/details?id=com.xxfalcoonx.pointerpro) |
 
 ---
 
