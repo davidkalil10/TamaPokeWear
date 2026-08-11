@@ -22,10 +22,10 @@ This is a Flutter reimplementation of [TamaPoke](https://github.com/socquique/Ta
 
 | Project | Description | Links |
 |---|---|---|
-| 📺 **IPTV Smart Cast** | A premium multi-platform IPTV player (Meta Quest, Android, Android TV, WearOS, Samsung TV, Windows, Steam) with a standout exclusive feature: cross-platform **Watch Together** — watch live channels in real time with friends remotely, synced frame-by-frame across any device. | [Website](https://davidkalil10.github.io/IPTV-Smart-Cast-Website/) |
+| 📺 **IPTV Smart Cast** | A premium multi-platform IPTV player (Meta Quest, Android, Android TV, WearOS, Samsung TV, Windows, Steam) with a standout exclusive feature: cross-platform **Watch Together** — watch live channels, VODs and Series in real time with friends remotely, synced frame-by-frame across any device. | [Website](https://davidkalil10.github.io/IPTV-Smart-Cast-Website/) |
 | 🎮 **Retro Smart Cast** | The ultimate GBA, GBC & GB emulator for Android, built in Flutter with a Dart FFI bridge to a native C++ engine. 60 FPS performance, haptic virtual buttons, real-time library search and multi-language support. | [Website](https://davidkalil10.github.io/Retro-Smart-Cast-Website/) |
 | 🎸 **Cifraria** | Professional song library and guitar chord manager built in Flutter. Smart folders, setlist management, animated QR offline sharing, instant transposition, Google Drive sync, and Meta Quest VR support. | [Website](https://davidkalil10.github.io/Cifraria_Website/) |
-| 🏢 **Simulação Sem Ilusão** | A financial X-ray app for anyone buying off-plan real estate in Brazil. Simulates INCC impact, Caixa vs. bank financing, obra evolution, FGTS weight, and custom payment schedules — with clean charts and PDF export. | [Website](https://simulacaosemilusao.netlify.app/) |
+| 🏢 **Simulação Sem Ilusão** | A financial X-ray app for anyone buying off-plan real estate in Brazil. Simulates INCC impact, Caixa vs. bank financing, construction evolution, FGTS weight, and custom payment schedules — with clean charts and PDF export. | [Website](https://simulacaosemilusao.netlify.app/) |
 
 ---
 
