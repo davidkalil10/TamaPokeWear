@@ -441,7 +441,10 @@ class GameEngine {
 
   bool get canFarewellNow {
     if (_pet.isEgg) return false;
-    return _pet.ageMinutes >= farewellAgeMin && dex[_pet.speciesId].isFinalForm;
+    // O bônus de cuidado reduz 2 horas (120 minutos) do tempo necessário para o Farewell.
+    // O tempo limite cai de 72h para um mínimo de 48h (2880 minutos).
+    final int requiredAge = (farewellAgeMin - (_pet.careBonus * 120)).clamp(2880, farewellAgeMin);
+    return _pet.ageMinutes >= requiredAge && dex[_pet.speciesId].isFinalForm;
   }
 
   bool get canRunawayNow => _pet.neglectTicks >= runawayTicks;

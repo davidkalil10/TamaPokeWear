@@ -82,7 +82,7 @@ While **awake**, per minute:
 - *Eevee* branches toward whichever evolution you're still missing.
 
 ### The Three Endings
-- 💛 **Farewell** — when it's a **final form** that has lived **3 days**. Blesses your next egg.
+- 💛 **Farewell** — when it's a **final form** that has lived **3 days** (72 hours). *Note: The 72h requirement is dynamically reduced by 2 hours for each point of `careBonus` (down to a minimum of 48h)!* Blesses your next egg.
 - 💔 **Run-away** — if you let **all four stats sit at 0 for a full hour**. Curses the next egg.
 - 👋 **Release** — long-press the creature to let it go on your terms (neutral).
 
@@ -107,6 +107,7 @@ This version includes an exclusive **Cloud Save** system powered by Google Drive
 ### Bonds, Streaks, Medals, Pokédex
 - **Streak** (player-wide): first care each real day. Milestones at **3 / 7 / 30 / 100** days.
 - **Bond** (per pet): grows with affection (**cap +8/day**), cools on neglect.
+- **Care Bonus**: A hidden multiplier calculated as `(Streak / 7) + (Bond / 10)`. It drastically improves the odds of hatching Rare, Legendary, and Shiny Pokémon, and dynamically reduces the time required for a Farewell.
 - **8 medals** (Lv10/25/50, favorite berry found, 7-day streak, max bond, final form, "fit").
 - **Pokédex:** raising a species registers it; **151 + shinies** to complete.
 
