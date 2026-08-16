@@ -264,13 +264,18 @@ class StatCardScreen extends StatelessWidget {
           if (unlocked)
             const Icon(Icons.check_circle, size: 10, color: Colors.white),
           if (unlocked) const SizedBox(width: 4),
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 10,
-              fontFamily: 'monospace',
-              fontWeight: FontWeight.bold,
-              color: unlocked ? Colors.white : Colors.black38,
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                text,
+                style: TextStyle(
+                  fontSize: 9,
+                  fontFamily: 'monospace',
+                  fontWeight: FontWeight.bold,
+                  color: unlocked ? Colors.white : Colors.black38,
+                ),
+              ),
             ),
           ),
         ],
