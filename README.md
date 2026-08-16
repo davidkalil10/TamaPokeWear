@@ -6,7 +6,7 @@
 ![Languages](https://img.shields.io/badge/languages-6-FFCB05)
 ![Platform](https://img.shields.io/badge/platform-WearOS%20%2F%20Android-green?logo=android)
 
-A **Gen-1 Pokémon Tamagotchi** for **Android WearOS** smartwatches — built entirely in **Flutter/Dart**. Raise any of the 151, evolve it, train it, and complete the Pokédex (shinies included).
+A **Gen-1 Pokémon Tamagotchi** for **Android WearOS** smartwatches AND **Android Mobile Phones** — built entirely in **Flutter/Dart**. Raise any of the 151, evolve it, train it, and complete the Pokédex (shinies included).
 
 This is a Flutter reimplementation of [TamaPoke](https://github.com/socquique/TamaPoke) by [socquique](https://github.com/socquique), which was originally built for a custom ESP32 round AMOLED hardware device. All game mechanics, numbers, and Pokédex data are ported faithfully 1:1 from the original firmware.
 
@@ -139,7 +139,7 @@ On first run you **choose a starter**. After that you start with an **egg** — 
 
 ### Prerequisites
 - [Flutter SDK](https://flutter.dev/docs/get-started/install) ≥ 3.x
-- A physical **WearOS smartwatch** or Android WearOS emulator
+- A physical **WearOS smartwatch**, **Android mobile phone**, or an emulator
 - Python 3.8+ with **Pillow** (`pip install Pillow`)
 
 ### 1. Clone the repository
@@ -190,8 +190,11 @@ This script downloads classic Pokémon background music tracks (MP3) directly fr
 ### 5. Build and run
 
 ```bash
-flutter pub get
-flutter run
+# To run on Wear OS (default flavor):
+flutter run --flavor wear
+
+# To run on Mobile Phone:
+flutter run --flavor mobile
 ```
 
 ---

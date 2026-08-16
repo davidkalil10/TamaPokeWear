@@ -52,8 +52,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            build/app/outputs/flutter-apk/app-wear-armeabi-v7a-debug.apk
-            build/app/outputs/flutter-apk/app-mobile-*-debug.apk
+            build/app/outputs/**/app-wear-armeabi-v7a-debug.apk
+            build/app/outputs/**/app-mobile-*-debug.apk
           tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'latest-manual' }}
           name: Release ${{ github.ref_type == 'tag' && github.ref_name || 'Manual Build' }}
           draft: false
