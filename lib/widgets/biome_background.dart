@@ -3,7 +3,14 @@ import 'package:flutter/material.dart';
 class BiomeBackground extends StatelessWidget {
   final String type;
   final bool sleeping;
-  const BiomeBackground({super.key, required this.type, this.sleeping = false});
+  final bool isMobileWrapper;
+  
+  const BiomeBackground({
+    super.key, 
+    required this.type, 
+    this.sleeping = false,
+    this.isMobileWrapper = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -27,8 +34,8 @@ class BiomeBackground extends StatelessWidget {
             child: Stack(
               children: [
                 Positioned(
-                  top: 40,
-                  right: 60,
+                  top: isMobileWrapper ? 80 : 40,
+                  right: isMobileWrapper ? 110 : 60,
                   child: Container(
                     width: 30,
                     height: 30,
@@ -47,8 +54,8 @@ class BiomeBackground extends StatelessWidget {
                 ),
                 if (!sleeping)
                   Positioned(
-                    top: 50,
-                    right: 100,
+                    top: isMobileWrapper ? 85 : 50,
+                    right: isMobileWrapper ? 160 : 100,
                     child: const Icon(Icons.cloud, color: Colors.white54, size: 40),
                   ),
               ],

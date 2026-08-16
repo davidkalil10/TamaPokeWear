@@ -37,14 +37,16 @@ import 'starter_selection_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final GameEngine engine;
+  final GlobalKey<HomeScreenState>? homeKey;
+  final bool isMobileWrapper;
 
-  const HomeScreen({super.key, required this.engine});
+  HomeScreen({Key? key, required this.engine, this.homeKey, this.isMobileWrapper = false}) : super(key: homeKey ?? key);
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<HomeScreen> createState() => HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
+class HomeScreenState extends State<HomeScreen>
     with TickerProviderStateMixin, WidgetsBindingObserver {
   GameEngine get engine => widget.engine;
 
@@ -57,7 +59,8 @@ class _HomeScreenState extends State<HomeScreen>
 
   bool _isEating = false;
   bool _isEatingCandy = false;
-  Color _eatingColor = Colors.red;
+  bool _isShowingCeremony = false;
+  Color _eatingColor = Colors.green;
   Key _eatKey = UniqueKey();
 
   bool _showHeart = false;
@@ -109,6 +112,62 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
+  void openSettings() {
+    if (_pageCtrl.page?.round() == 0) {
+      closeToHome();
+    } else {
+      _pageCtrl.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+    }
+  }
+
+  void openStatCard() {
+    if (_pageCtrl.page?.round() == 2) {
+      closeToHome();
+    } else {
+      _pageCtrl.animateToPage(2, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+    }
+  }
+
+  void openDex() {
+    if (_horizontalPageCtrl.page?.round() == 1) {
+      closeToHome();
+    } else {
+      _horizontalPageCtrl.animateToPage(1, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+    }
+  }
+
+  void closeToHome() {
+    _pageCtrl.animateToPage(1, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+    _horizontalPageCtrl.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+  }
+
+  void actionA() {
+    setState(() => _isFeeding = !_isFeeding);
+  }
+
+  void actionB() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => CatchScreen(engine: engine)),
+    );
+  }
+
+  void actionC() {
+    engine.toggleSleep();
+  }
+
+  void actionD() {
+    if (_isBathing) return;
+    engine.bath();
+    setState(() => _isBathing = true);
+    Future.delayed(
+      const Duration(seconds: 2),
+      () {
+        if (mounted) setState(() => _isBathing = false);
+      },
+    );
+  }
+
   void _onHorizontalPageChanged() {
     if (_horizontalPageCtrl.page != null) {
       if (_horizontalPageCtrl.page! >= 0.5 && !_isPokedexBgm) {
@@ -151,7 +210,7 @@ class _HomeScreenState extends State<HomeScreen>
 
     // Se está em um ovo, mostra tela do ovo
     if (pet.isEgg) {
-      return EggScreen(engine: engine);
+      return EggScreen(engine: engine, isMobileWrapper: widget.isMobileWrapper);
     }
 
     final entry = dex[pet.speciesId];
@@ -166,6 +225,7 @@ class _HomeScreenState extends State<HomeScreen>
           // Index 0: Settings (swipe down)
           SettingsScreen(
             engine: engine,
+            isMobileWrapper: widget.isMobileWrapper,
             onOk: () {
               _pageCtrl.animateToPage(
                 1,
@@ -194,7 +254,11 @@ class _HomeScreenState extends State<HomeScreen>
                 child: Stack(
                   children: [
                     // Background (bioma + hora)
-                    BiomeBackground(type: entry.type, sleeping: pet.sleeping),
+                    BiomeBackground(
+                      type: entry.type, 
+                      sleeping: pet.sleeping,
+                      isMobileWrapper: widget.isMobileWrapper,
+                    ),
 
                     // Conteúdo principal
                     Center(
@@ -206,7 +270,7 @@ class _HomeScreenState extends State<HomeScreen>
                           children: [
                             // Nome + Nível (topo)
                             Positioned(
-                              top: size.height * 0.10,
+                              top: widget.isMobileWrapper ? size.height * 0.26 : size.height * 0.10,
                               child: Column(
                                 children: [
                                   if (pet.streak > 0)
@@ -242,16 +306,21 @@ class _HomeScreenState extends State<HomeScreen>
                               ),
                             ),
 
+
                             // Stat bars (abaixo do sprite)
                             Positioned(
-                              bottom: size.height * 0.28,
-                              child: StatBars(
-                                food: pet.fullness,
-                                joy: pet.joy,
-                                energy: pet.energy,
-                                hygiene: pet.hygiene,
-                                width: size.width * 0.70,
-                                sleeping: pet.sleeping,
+                              bottom: widget.isMobileWrapper ? size.height * 0.30 : size.height * 0.28,
+                              child: Transform.scale(
+                                scale: widget.isMobileWrapper ? 0.95 : 1.0,
+                                child: StatBars(
+                                  food: pet.fullness,
+                                  joy: pet.joy,
+                                  energy: pet.energy,
+                                  hygiene: pet.hygiene,
+                                  width: widget.isMobileWrapper ? size.width * 0.65 : size.width * 0.70,
+                                  sleeping: pet.sleeping,
+                                  isMobile: widget.isMobileWrapper,
+                                ),
                               ),
                             ),
 
@@ -259,7 +328,7 @@ class _HomeScreenState extends State<HomeScreen>
                             if (pet.poops > 0)
                               Positioned(
                                 right: size.width * 0.18,
-                                bottom: size.height * 0.45,
+                                bottom: widget.isMobileWrapper ? size.height * 0.38 : size.height * 0.45,
                                 child: PoopIndicator(count: pet.poops),
                               ),
 
@@ -267,7 +336,7 @@ class _HomeScreenState extends State<HomeScreen>
                             AnimatedBuilder(
                               animation: _bounceAnimation,
                               builder: (_, __) => Transform.translate(
-                                offset: Offset(0, _bounceAnimation.value),
+                                offset: Offset(0, _bounceAnimation.value + (widget.isMobileWrapper ? size.height * 0.05 : 0)),
                                 child: _buildSprite(pet, size),
                               ),
                             ),
@@ -306,7 +375,7 @@ class _HomeScreenState extends State<HomeScreen>
                             // Heart Animation
                             if (_showHeart)
                               Positioned(
-                                top: size.height * 0.25,
+                                top: widget.isMobileWrapper ? size.height * 0.45 : size.height * 0.25,
                                 right: size.width * 0.25,
                                 child: TweenAnimationBuilder<double>(
                                   key: _heartKey,
@@ -436,7 +505,7 @@ class _HomeScreenState extends State<HomeScreen>
 
                             // Action buttons (arco inferior)
                             Positioned(
-                              bottom: size.height * 0.03,
+                              bottom: widget.isMobileWrapper ? size.height * 0.14 : size.height * 0.03,
                               child: ActionButtons(
                                 onFeed: () {
                                   setState(() => _isFeeding = !_isFeeding);
@@ -461,7 +530,7 @@ class _HomeScreenState extends State<HomeScreen>
                                   );
                                 },
                                 sleeping: pet.sleeping,
-                                width: size.width * 0.75,
+                                width: size.width * (widget.isMobileWrapper ? 0.65 : 0.75),
                               ),
                             ),
 
@@ -528,6 +597,7 @@ class _HomeScreenState extends State<HomeScreen>
               // Horizontal Page 1: Pokedex
               PokedexScreen(
                 engine: engine,
+                isMobileWrapper: widget.isMobileWrapper,
                 onReturnHome: () {
                   if (mounted) {
                     _horizontalPageCtrl.animateToPage(
@@ -695,21 +765,25 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   void _showFarewell() {
+    if (_isShowingCeremony) return;
+    _isShowingCeremony = true;
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => CeremonyScreen(engine: engine, type: Ceremony.farewell),
       ),
-    );
+    ).then((_) => _isShowingCeremony = false);
   }
 
   void _showRunaway() {
+    if (_isShowingCeremony) return;
+    _isShowingCeremony = true;
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => CeremonyScreen(engine: engine, type: Ceremony.runaway),
       ),
-    );
+    ).then((_) => _isShowingCeremony = false);
   }
 
   void _showFarewellDialog() {

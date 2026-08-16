@@ -5,6 +5,7 @@ class StatBars extends StatelessWidget {
   final int food, joy, energy, hygiene;
   final double width;
   final bool sleeping;
+  final bool isMobile;
 
   const StatBars({
     super.key,
@@ -14,6 +15,7 @@ class StatBars extends StatelessWidget {
     required this.hygiene,
     this.width = 180,
     this.sleeping = false,
+    this.isMobile = false,
   });
 
   @override
@@ -55,7 +57,7 @@ class StatBars extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              fontSize: 10,
+              fontSize: isMobile ? 12 : 10,
               fontFamily: 'monospace',
               fontWeight: FontWeight.bold,
               color: sleeping ? Colors.white : Colors.black87,
@@ -64,7 +66,7 @@ class StatBars extends StatelessWidget {
           const SizedBox(width: 4),
           Expanded(
             child: Container(
-              height: 6,
+              height: isMobile ? 8 : 6,
               decoration: BoxDecoration(
                 color: Colors.black12,
                 borderRadius: BorderRadius.circular(1),

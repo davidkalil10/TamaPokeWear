@@ -80,8 +80,10 @@ class NotificationService {
     AndroidBitmap<Object>? largeIcon;
     if (speciesId != null && speciesId > 0) {
       try {
-        final File? file = await _getScaledThumb(speciesId);
-        if (file != null) {
+        final Directory tempDir = await getTemporaryDirectory();
+        final String dexNum = speciesId.toString().padLeft(3, '0');
+        final File file = File('${tempDir.path}/thumb_scaled_$dexNum.png');
+        if (file.existsSync()) {
           largeIcon = FilePathAndroidBitmap(file.path);
         }
       } catch (e) {
@@ -143,9 +145,14 @@ class NotificationService {
     }
   }
 
-  Future<File?> _getScaledThumb(int speciesId) async {
+  Future<File?> cacheThumb(int speciesId) async {
     try {
       final String dexNum = speciesId.toString().padLeft(3, '0');
+      final Directory tempDir = await getTemporaryDirectory();
+      final File file = File('${tempDir.path}/thumb_scaled_$dexNum.png');
+      
+      if (file.existsSync()) return file;
+
       final ByteData byteData = await rootBundle.load('assets/sprites/thumbs/$dexNum.png');
       final Uint8List list = byteData.buffer.asUint8List();
       
@@ -153,7 +160,6 @@ class NotificationService {
       final ui.FrameInfo frameInfo = await codec.getNextFrame();
       final ui.Image image = frameInfo.image;
       
-      // Aumenta a imagem em 3x para ocupar adequadamente o bloco da notificação no WearOS
       final int scale = 3;
       final int targetWidth = image.width * scale;
       final int targetHeight = image.height * scale;
@@ -174,8 +180,6 @@ class NotificationService {
       final ByteData? pngBytes = await scaledImage.toByteData(format: ui.ImageByteFormat.png);
       
       if (pngBytes != null) {
-        final Directory tempDir = await getTemporaryDirectory();
-        final File file = File('${tempDir.path}/thumb_scaled_$dexNum.png');
         await file.writeAsBytes(pngBytes.buffer.asUint8List(), flush: true);
         return file;
       }

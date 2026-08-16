@@ -5,7 +5,9 @@ import '../i18n/strings.dart';
 
 class EggScreen extends StatefulWidget {
   final GameEngine engine;
-  const EggScreen({super.key, required this.engine});
+  final bool isMobileWrapper;
+  
+  const EggScreen({super.key, required this.engine, this.isMobileWrapper = false});
 
   @override
   State<EggScreen> createState() => _EggScreenState();
@@ -76,7 +78,7 @@ class _EggScreenState extends State<EggScreen> with SingleTickerProviderStateMix
           ),
           // Prompt text
           Positioned(
-            bottom: 30,
+            bottom: widget.isMobileWrapper ? 60 : 30,
             left: 0,
             right: 0,
             child: Text(

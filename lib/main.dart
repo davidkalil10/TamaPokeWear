@@ -5,6 +5,8 @@ import 'services/game_engine.dart';
 import 'services/storage_service.dart';
 import 'services/notification_service.dart';
 
+import 'package:flutter/services.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -17,5 +19,7 @@ void main() async {
   final engine = GameEngine(storage: storage);
   await engine.init();
 
-  runApp(TamaPokeApp(engine: engine));
+  const flavor = String.fromEnvironment('FLUTTER_APP_FLAVOR', defaultValue: 'wear');
+
+  runApp(TamaPokeApp(engine: engine, flavor: flavor));
 }

@@ -84,7 +84,7 @@ class _CeremonyScreenState extends State<CeremonyScreen> {
                   InkWell(
                     onTap: () {
                       widget.engine.endCeremony();
-                      Navigator.pop(context);
+                      Navigator.popUntil(context, (route) => route.isFirst);
                     },
                     customBorder: const CircleBorder(),
                     child: Container(

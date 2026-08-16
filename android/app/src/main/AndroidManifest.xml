@@ -1,6 +1,4 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Declare this is a Wear OS app -->
-    <uses-feature android:name="android.hardware.type.watch" />
     
     <!-- Permissions for notifications -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
@@ -16,10 +14,6 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 
-        <!-- Standalone Wear OS app (no companion phone app needed) -->
-        <meta-data
-            android:name="com.google.android.wearable.standalone"
-            android:value="true" />
 
         <activity
             android:name=".MainActivity"

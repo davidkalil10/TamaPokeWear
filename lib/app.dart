@@ -4,12 +4,14 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'screens/home_screen.dart';
 import 'services/game_engine.dart';
+import 'screens/mobile_wrapper.dart';
 import 'theme/wear_theme.dart';
 
 class TamaPokeApp extends StatefulWidget {
   final GameEngine engine;
+  final String flavor;
 
-  const TamaPokeApp({super.key, required this.engine});
+  const TamaPokeApp({super.key, required this.engine, this.flavor = 'wear'});
 
   @override
   State<TamaPokeApp> createState() => _TamaPokeAppState();
@@ -32,8 +34,9 @@ class _TamaPokeAppState extends State<TamaPokeApp> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.detached || state == AppLifecycleState.inactive) {
-      widget.engine.forceSave();
+    debugPrint("[TamaPokeApp] AppLifecycleState changed to: $state");
+    if (state == AppLifecycleState.paused) {
+      widget.engine.pauseGame();
       widget.engine.scheduleFutureNotifications();
     } else if (state == AppLifecycleState.resumed) {
       widget.engine.resumeGame();
@@ -42,10 +45,12 @@ class _TamaPokeAppState extends State<TamaPokeApp> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'TamaPokeWear',
-      theme: WearTheme.dark,
-      home: WatchShape(
+    Widget homeWidget;
+    
+    if (widget.flavor == 'mobile') {
+      homeWidget = MobileWrapper(engine: widget.engine);
+    } else {
+      homeWidget = WatchShape(
         builder: (context, shape, child) {
           return AmbientMode(
             builder: (context, mode, child) {
@@ -53,7 +58,13 @@ class _TamaPokeAppState extends State<TamaPokeApp> with WidgetsBindingObserver {
             },
           );
         },
-      ),
+      );
+    }
+
+    return MaterialApp(
+      title: 'TamaPokeWear',
+      theme: WearTheme.dark,
+      home: homeWidget,
       debugShowCheckedModeBanner: false,
     );
   }

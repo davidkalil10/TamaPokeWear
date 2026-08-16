@@ -46,6 +46,16 @@ android {
         }
     }
 
+    flavorDimensions += "device"
+    productFlavors {
+        create("wear") {
+            dimension = "device"
+        }
+        create("mobile") {
+            dimension = "device"
+        }
+    }
+
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")

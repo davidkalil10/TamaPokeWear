@@ -42,13 +42,18 @@ jobs:
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/tamapoke.jks
 
-      - name: Build APK (Split per ABI - Debug)
-        run: flutter build apk --debug --split-per-abi
+      - name: Build WearOS APK (Debug)
+        run: flutter build apk --flavor wear --debug --split-per-abi
+
+      - name: Build Mobile APK (Split per ABI - Debug)
+        run: flutter build apk --flavor mobile --debug --split-per-abi
 
       - name: Create Release and Upload APK
         uses: softprops/action-gh-release@v1
         with:
-          files: build/app/outputs/flutter-apk/app-armeabi-v7a-debug.apk
+          files: |
+            build/app/outputs/flutter-apk/app-wear-armeabi-v7a-debug.apk
+            build/app/outputs/flutter-apk/app-mobile-*-debug.apk
           tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'latest-manual' }}
           name: Release ${{ github.ref_type == 'tag' && github.ref_name || 'Manual Build' }}
           draft: false

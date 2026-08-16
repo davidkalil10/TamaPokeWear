@@ -6,8 +6,9 @@ import '../i18n/strings.dart';
 class PokedexScreen extends StatefulWidget {
   final GameEngine engine;
   final VoidCallback? onReturnHome;
+  final bool isMobileWrapper;
 
-  const PokedexScreen({super.key, required this.engine, this.onReturnHome});
+  const PokedexScreen({super.key, required this.engine, this.onReturnHome, this.isMobileWrapper = false});
 
   @override
   State<PokedexScreen> createState() => _PokedexScreenState();
@@ -92,7 +93,7 @@ class _PokedexScreenState extends State<PokedexScreen> {
       body: Column(
         children: [
           // Espaçamento para não cortar na borda circular do relógio
-          SizedBox(height: MediaQuery.of(context).size.height * 0.15),
+          SizedBox(height: MediaQuery.of(context).size.height * (widget.isMobileWrapper ? 0.25 : 0.15)),
           
           Text(
             'POKEDEX ${pet.registeredCount}/151',
@@ -110,7 +111,11 @@ class _PokedexScreenState extends State<PokedexScreen> {
           Expanded(
             child: GridView.builder(
               // Padding extra no final para conseguir rolar até o último pokémon
-              padding: const EdgeInsets.only(left: 30, right: 30, bottom: 60),
+              padding: EdgeInsets.only(
+                left: widget.isMobileWrapper ? 70 : 30, 
+                right: widget.isMobileWrapper ? 70 : 30, 
+                bottom: widget.isMobileWrapper ? 90 : 60
+              ),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 4, 
                 mainAxisSpacing: 12, 

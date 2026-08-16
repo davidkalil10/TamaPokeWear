@@ -9,7 +9,9 @@ import '../i18n/strings.dart';
 class SettingsScreen extends StatefulWidget {
   final GameEngine engine;
   final VoidCallback onOk;
-  const SettingsScreen({super.key, required this.engine, required this.onOk});
+  final bool isMobileWrapper;
+  
+  const SettingsScreen({super.key, required this.engine, required this.onOk, this.isMobileWrapper = false});
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -167,6 +169,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            if (widget.isMobileWrapper) const SizedBox(height: 80), // Padding extra para conseguir rolar itens do topo até o centro do círculo
             const SizedBox(height: 10),
             Text(tr('setTime'), style: const TextStyle(fontFamily: 'monospace', fontSize: 12, color: Colors.black87, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
@@ -392,7 +395,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 opacity: 0.1,
                 child: Icon(Icons.delete, size: 16, color: Colors.black),
               ),
-            )
+            ),
+            if (widget.isMobileWrapper) const SizedBox(height: 80), // Padding extra para conseguir rolar itens do fundo até o centro do círculo
           ],
         ),
         ),

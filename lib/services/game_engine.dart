@@ -25,6 +25,8 @@ class GameEngine {
   Timer? _tickTimer;
 
   /// Callbacks para a UI reagir a eventos
+  bool _isPaused = false;
+
   void Function()? onStateChanged;
   void Function(String message)? onStatusMessage;
   void Function()? onEvolutionReady;
@@ -61,6 +63,9 @@ class GameEngine {
     
     // Iniciar BGM
     applyBgm();
+
+    // Cacheia a thumb para notificações
+    NotificationService().cacheThumb(_pet.speciesId);
   }
 
   Future<void> reloadEngine() async {
@@ -85,6 +90,9 @@ class GameEngine {
     
     // 5. Atualizar a tela
     onStateChanged?.call();
+    
+    // Cacheia a thumb para notificações
+    NotificationService().cacheThumb(_pet.speciesId);
   }
 
   Future<void> prepareForBackup() async {
@@ -126,6 +134,7 @@ class GameEngine {
     if (nowEpoch == 0 || seen == 0) return;
 
     int mins = (nowEpoch > seen) ? (nowEpoch - seen) ~/ 60 : 0;
+    debugPrint("[_syncClock] nowEpoch: $nowEpoch, seen: $seen, mins calculated: $mins, ceremony: ${_pet.currentCeremony}");
     if (mins < 1 || _pet.currentCeremony != Ceremony.none) {
       return; // sem tempo significativo ou em cerimônia
     }
@@ -136,6 +145,7 @@ class GameEngine {
     // Tope: 2 semanas
     if (mins > 14 * 24 * 60) mins = 14 * 24 * 60;
 
+    debugPrint("[_syncClock] Processing $mins minutes of offline time. Initial fullness: ${_pet.fullness}");
     for (int i = 0; i < mins; i++) {
       _pet.ageMinutes++;
       if (_pet.isEgg) {
@@ -169,6 +179,7 @@ class GameEngine {
   // ── Tick principal (port de Pet::tick) ─────────────────────────────────────
 
   void _tick() {
+    if (_isPaused) return;
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     
     // Se o timer do Flutter foi suspenso/congelado pelo sistema (ex: Doze mode no WearOS),
@@ -422,6 +433,8 @@ class GameEngine {
     if (_pet.shiny) _pet.registerShiny(_pet.speciesId);
     _pet.nick = ''; // reseta apelido na evolução
 
+    NotificationService().cacheThumb(_pet.speciesId);
+
     // Verifica medalha de forma final
     if (dex[_pet.speciesId].isFinalForm) {
       _awardMedal(Medals.finalForm);
@@ -484,6 +497,8 @@ class GameEngine {
     _pet.prevSpeciesId = -1;
     _pet.eggTarget = _pickEggSpecies();
     _pet.starterPick = (_pet.registeredCount == 0);
+    
+    NotificationService().cacheThumb(_pet.eggTarget);
 
     // Shiny roll: 1/48 base, 1/24 após farewell, melhorado por careBonus
     int shinyBase = (_pet.lastEnding == Ceremony.farewell ? 24 : 48) -
@@ -746,14 +761,23 @@ class GameEngine {
   void forceSave() {
     _save();
   }
+  
+  void pauseGame() {
+    _isPaused = true;
+    _pet.lastSeenEpoch = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    _save();
+  }
 
   void resumeGame() {
+    _isPaused = false;
     final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    debugPrint("[resumeGame] Called! now: $now, lastSeen: ${_pet.lastSeenEpoch}");
     if (_pet.lastSeenEpoch > 0) {
       _syncClock(now);
     }
     _save();
     _notifyChanged();
+    debugPrint("[resumeGame] Finished. Final fullness: ${_pet.fullness}");
   }
 
   void _notifyChanged() {
