@@ -461,7 +461,7 @@ class HomeScreenState extends State<HomeScreen>
                             if (engine.canEvolveNow)
                               Positioned(
                                 top: size.height * 0.35,
-                                left: size.width * 0.1,
+                                left: widget.isMobileWrapper ? size.width * 0.22 : size.width * 0.1,
                                 child: GestureDetector(
                                   onTap: _showEvolution,
                                   child: Container(
@@ -483,7 +483,7 @@ class HomeScreenState extends State<HomeScreen>
                             if (engine.canFarewellNow)
                               Positioned(
                                 top: size.height * 0.35,
-                                right: size.width * 0.1,
+                                right: widget.isMobileWrapper ? size.width * 0.22 : size.width * 0.1,
                                 child: GestureDetector(
                                   onTap: _showFarewellDialog,
                                   child: Container(
